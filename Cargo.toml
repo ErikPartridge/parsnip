@@ -1,0 +1,7 @@
+[package]
+name = "parsnip"
+version = "0.1.0"
+authors = ["Erik A. Partridge <erik.partridge@mail.mcgill.ca>"]
+edition = "2018"
+
+[dependencies]
