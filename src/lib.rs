@@ -196,6 +196,79 @@ pub fn f1_score(pred: &[u64], actual: &[u64], average: Option<String>) -> f32 {
     }
 }
 
+/// The recall of a dataset
+/// Returns the hamming loss which is the percentage of items which are misclassified [0, 1]
+/// 
+/// Supports macro and weighted averages
+/// ```
+/// use parsnip::hamming_loss;
+/// 
+/// let actual = vec![0, 1, 2, 0, 0];
+/// let pred = vec![0, 2, 1, 0, 1];
+/// 
+/// assert_eq!(hamming_loss(&pred, &actual), 0.6);
+/// ```
+pub fn hamming_loss(pred: &[u64], actual: &[u64]) -> f32 {
+    return 1.0 - categorical_accuracy(pred, actual);
+}
+
+fn macro_fbeta_score(pred: &[u64], actual: &[u64], beta: f32) -> f32 {
+    let precision = macro_precision(pred, actual);
+    let recall = macro_recall(pred, actual);
+    let top = (1.0 + beta * beta)  * (recall * precision);
+    let bottom = (beta * beta * precision) + recall;
+    return top / bottom;
+}
+
+fn weighted_fbeta_score(pred: &[u64], actual: &[u64], beta: f32) -> f32 {
+    let precision = weighted_precision(pred, actual);
+    let recall = weighted_recall(pred, actual);
+    let top = (1.0 + beta * beta)  * (recall * precision);
+    let bottom = (beta * beta * precision) + recall;
+    return top / bottom;
+}
+
+/// The recall of a dataset
+/// Returns the hamming loss which is the percentage of items which are misclassified [0, 1]
+/// 
+/// Supports macro and weighted averages
+/// ```
+/// use parsnip::fbeta_score;
+/// 
+/// let actual = vec![0, 1, 2, 0, 1, 2];
+/// let pred = vec![0, 2, 1, 0, 0, 1];
+/// 
+/// assert_eq!(fbeta_score(&pred, &actual, 0.5, Some("macro".to_string())), 0.23809524);
+/// assert_eq!(fbeta_score(&pred, &actual, 0.5, Some("weighted".to_string())), 0.23809527);
+/// ```
+pub fn fbeta_score(pred: &[u64], actual: &[u64], beta: f32, average: Option<String>) -> f32 {
+    match average {
+        None => return macro_fbeta_score(pred, actual, beta),
+        Some(string) => match string.as_ref() {
+            "macro" => return macro_fbeta_score(pred, actual, beta),
+            "weighted" => return weighted_fbeta_score(pred, actual, beta),
+            _ => panic!("invalid averaging type")
+        }
+    }
+}
+
+/// The recall of a dataset
+/// Returns the hamming loss which is the percentage of items which are misclassified [0, 1]
+/// 
+/// Supports macro and weighted averages
+/// ```
+/// use parsnip::jaccard_similiarity_score;
+/// 
+/// let actual = vec![0, 2, 1, 3];
+/// let pred = vec![0, 1, 2, 3];
+/// 
+/// assert_eq!(jaccard_similiarity_score(&pred, &actual), 0.5);
+/// ```
+pub fn jaccard_similiarity_score(pred: &[u64], actual: &[u64]) -> f32 {
+    return categorical_accuracy(pred, actual);
+}
+
+
 #[cfg(test)]
 mod tests {
     use super::*;
