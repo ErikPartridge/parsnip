@@ -1,6 +1,3 @@
-#![feature(test)]
-
-extern crate test;
 use std::collections::HashMap;
 
 /// Compute the gini impurity of a dataset. 
@@ -165,7 +162,6 @@ pub fn recall(pred: &[u64], actual: &[u64], average: Option<String>) -> f32 {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use test::Bencher;
     #[test]
     fn test_gini() {
         let vec = vec![0, 0, 0, 1];
