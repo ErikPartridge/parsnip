@@ -159,6 +159,43 @@ pub fn recall(pred: &[u64], actual: &[u64], average: Option<String>) -> f32 {
     }
 }
 
+fn macro_f1(pred: &[u64], actual: &[u64]) -> f32 {
+    let recall = macro_recall(pred, actual);
+    let precision = macro_precision(pred, actual);
+    return 2.0 * (recall * precision) / (recall + precision);
+}
+
+fn weighted_f1(pred: &[u64], actual: &[u64]) -> f32 {
+    let recall = weighted_recall(pred, actual);
+    let precision = weighted_precision(pred, actual);
+    return 2.0 * (recall * precision) / (recall + precision);
+
+}
+
+/// The recall of a dataset
+/// Returns an f1 score where 1 is perfect and 0 is atrocious.
+/// 
+/// Supports macro and weighted averages
+/// ```
+/// use parsnip::f1_score;
+/// 
+/// let actual = vec![0, 1, 2, 0, 1, 2];
+/// let pred = vec![0, 2, 1, 0, 0, 1];
+/// 
+/// assert_eq!(f1_score(&pred, &actual, Some("macro".to_string())), 0.26666665);
+/// assert_eq!(f1_score(&pred, &actual, Some("weighted".to_string())), 0.26666668);
+/// ```
+pub fn f1_score(pred: &[u64], actual: &[u64], average: Option<String>) -> f32 {
+    match average {
+        None => return macro_f1(pred, actual),
+        Some(string) => match string.as_ref() {
+            "macro" => return macro_f1(pred, actual),
+            "weighted" => return weighted_f1(pred, actual),
+            _ => panic!("invalid averaging type")
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -220,5 +257,12 @@ mod tests {
         let actual = vec![0, 1, 2, 0, 1, 2];
         let pred = vec![0, 2, 1, 0, 0, 1];
         assert_eq!(0.333333334, weighted_recall(&pred, &actual));
+    }
+
+    #[test]
+    fn test_f1_score() {
+        let actual = vec![0, 1, 2, 0, 1, 2];
+        let pred = vec![0, 2, 1, 0, 0, 1];
+        assert_eq!(f1_score(&pred, &actual, Some("macro".to_string())), 0.26666665);
     }
 }
