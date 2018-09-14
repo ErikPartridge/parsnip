@@ -175,7 +175,7 @@ fn weighted_f1(pred: &[u64], actual: &[u64]) -> f32 {
 
 }
 
-/// The recall of a dataset
+/// The f1 score of a dataset
 /// 
 /// Returns an f1 score where 1 is perfect and 0 is atrocious.
 /// 
@@ -200,7 +200,7 @@ pub fn f1_score(pred: &[u64], actual: &[u64], average: Option<String>) -> f32 {
     }
 }
 
-/// The recall of a dataset
+/// The hamming loss of a dataset
 /// 
 /// Returns the hamming loss which is the percentage of items which are misclassified [0, 1]
 /// 
@@ -233,7 +233,7 @@ fn weighted_fbeta_score(pred: &[u64], actual: &[u64], beta: f32) -> f32 {
     return top / bottom;
 }
 
-/// The recall of a dataset
+/// The fbeta of a dataset
 /// 
 /// Returns the fbeta score [0, 1]
 /// 
@@ -258,7 +258,7 @@ pub fn fbeta_score(pred: &[u64], actual: &[u64], beta: f32, average: Option<Stri
     }
 }
 
-/// The recall of a dataset
+/// The jaccard similarity of a dataset
 /// 
 /// Returns the jaccard similarity score which for our purposes is effectively categorical accuracy [0, 1]
 /// 
