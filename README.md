@@ -22,7 +22,10 @@ I'm first aiming to finish broad support for categorical data—I want it to cov
 
 ### Change log
 
-##### 0.1.3
+#### 0.2.0
+Added numerous different functions for categorical accuracy, bumping to 0.2.0 as a result. I consider most of these now stable.
+
+#### 0.1.3
 Added f1_score support
 
 Documenation is available at [docs.rs](https://docs.rs/parsnip#)
