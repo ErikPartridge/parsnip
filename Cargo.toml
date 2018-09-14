@@ -13,6 +13,6 @@ readme = "README.md"
 [badges]
 is-it-maintained-issue-resolution = { repository = "ErikPartridge/parsnip" }
 is-it-maintained-open-issues = { repository = "ErikPartridge/parsnip" }
-travis-ci = { repository = "ErikPartridge/coniferous", branch = "master" }
+travis-ci = { repository = "ErikPartridge/parsnip", branch = "master" }
 
 [dependencies]
