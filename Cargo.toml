@@ -3,5 +3,16 @@ name = "parsnip"
 version = "0.1.0"
 authors = ["Erik A. Partridge <erik.partridge@mail.mcgill.ca>"]
 edition = "2018"
+license = "MIT"
+homepage = "https://github.com/ErikPartridge/parsnip"
+repository = "https://github.com/ErikPartridge/parsnip"
+categories = ["science"]
+description = "Data science metrics (presently categorical only) for Rust."
+readme = "README.md"
+
+[badges]
+is-it-maintained-issue-resolution = { repository = "ErikPartridge/parsnip" }
+is-it-maintained-open-issues = { repository = "ErikPartridge/parsnip" }
+travis-ci = { repository = "ErikPartridge/coniferous", branch = "master" }
 
 [dependencies]
