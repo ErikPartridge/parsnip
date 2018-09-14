@@ -29,6 +29,7 @@ pub fn gini(data: &[u64]) -> f32 {
 }
 
 /// The categorical accuracy of a dataset
+/// 
 /// Returns a float where 1.0 is a perfectly accurate dataset
 /// ```
 /// use parsnip::categorical_accuracy;
@@ -79,6 +80,7 @@ fn macro_precision(pred: &[u64], actual: &[u64]) -> f32 {
 }
 
 /// The precision of a dataset
+/// 
 /// Returns a float where a 1.0 is a perfectly precise result set
 /// 
 /// Supports macro and weighted averages
@@ -137,6 +139,7 @@ fn macro_recall(pred: &[u64], actual: &[u64]) -> f32 {
 }
 
 /// The recall of a dataset
+/// 
 /// Returns a float where a 1.0 is a perfectly recalled result set
 /// 
 /// Supports macro and weighted averages
@@ -173,6 +176,7 @@ fn weighted_f1(pred: &[u64], actual: &[u64]) -> f32 {
 }
 
 /// The recall of a dataset
+/// 
 /// Returns an f1 score where 1 is perfect and 0 is atrocious.
 /// 
 /// Supports macro and weighted averages
@@ -197,6 +201,7 @@ pub fn f1_score(pred: &[u64], actual: &[u64], average: Option<String>) -> f32 {
 }
 
 /// The recall of a dataset
+/// 
 /// Returns the hamming loss which is the percentage of items which are misclassified [0, 1]
 /// 
 /// Supports macro and weighted averages
@@ -229,7 +234,8 @@ fn weighted_fbeta_score(pred: &[u64], actual: &[u64], beta: f32) -> f32 {
 }
 
 /// The recall of a dataset
-/// Returns the hamming loss which is the percentage of items which are misclassified [0, 1]
+/// 
+/// Returns the fbeta score [0, 1]
 /// 
 /// Supports macro and weighted averages
 /// ```
@@ -253,7 +259,8 @@ pub fn fbeta_score(pred: &[u64], actual: &[u64], beta: f32, average: Option<Stri
 }
 
 /// The recall of a dataset
-/// Returns the hamming loss which is the percentage of items which are misclassified [0, 1]
+/// 
+/// Returns the jaccard similarity score which for our purposes is effectively categorical accuracy [0, 1]
 /// 
 /// Supports macro and weighted averages
 /// ```
