@@ -360,75 +360,75 @@ where
 }
 
 #[cfg(test)]
+#[macro_use] extern crate approx;
+
+#[cfg(test)]
 mod tests {
     use super::*;
     #[test]
     fn test_gini() {
         let vec = vec![0, 0, 0, 1];
-        assert_eq!(0.375, gini(&vec));
+        assert_ulps_eq!(0.375, gini(&vec));
         let v2 = vec![0, 0];
-        assert_eq!(0.0, gini(&v2));
+        assert_ulps_eq!(0.0, gini(&v2));
         let mut v3 = vec![0];
         v3.pop();
-        assert_eq!(1.0, gini(&v3));
+        assert_ulps_eq!(1.0, gini(&v3));
     }
 
     #[test]
     fn test_categorical_accuracy() {
         let pred = vec![0, 1, 0, 1, 0, 1];
         let real = vec![0, 0, 0, 0, 1, 0];
-        assert_eq!(0.33333334, categorical_accuracy(&pred, &real));
+        assert_ulps_eq!(0.33333333, categorical_accuracy(&pred, &real));
     }
 
     #[test]
     fn test_class_precision() {
         let actual = vec![0, 1, 2, 0, 1, 2];
         let pred = vec![0, 2, 1, 0, 0, 1];
-        assert_eq!(0.6666667, class_precision(&pred, &actual, &0));
+        assert_ulps_eq!(0.6666666, class_precision(&pred, &actual, &0));
     }
 
     #[test]
     fn test_class_recall() {
         let actual = vec![0, 1, 2, 0, 0, 0];
         let pred = vec![0, 2, 1, 0, 0, 1];
-        assert_eq!(0.75, class_recall(&pred, &actual, &0));
+        assert_ulps_eq!(0.75, class_recall(&pred, &actual, &0));
     }
 
     #[test]
     fn test_weighted_precision() {
         let actual = vec![0, 1, 2, 0, 1, 2];
         let pred = vec![0, 2, 1, 0, 0, 1];
-        assert_eq!(0.22222224, weighted_precision(&pred, &actual));
+        assert_ulps_eq!(0.22222222, weighted_precision(&pred, &actual));
     }
 
     #[test]
     fn test_macro_precision() {
         let actual = vec![0, 1, 2, 0, 1, 2];
         let pred = vec![0, 2, 1, 0, 0, 1];
-        assert_eq!(0.22222222, macro_precision(&pred, &actual));
+        assert_ulps_eq!(0.22222222, macro_precision(&pred, &actual));
     }
 
     #[test]
     fn test_macro_recall() {
         let actual = vec![0, 1, 2, 0, 1, 2];
         let pred = vec![0, 2, 1, 0, 0, 1];
-        assert_eq!(0.33333334, macro_recall(&pred, &actual));
+        assert_ulps_eq!(0.33333333, macro_recall(&pred, &actual));
     }
 
     #[test]
     fn test_weighted_recall() {
         let actual = vec![0, 1, 2, 0, 1, 2];
         let pred = vec![0, 2, 1, 0, 0, 1];
-        assert_eq!(0.333333334, weighted_recall(&pred, &actual));
+        assert_ulps_eq!(0.333333333, weighted_recall(&pred, &actual));
     }
 
     #[test]
     fn test_f1_score() {
         let actual = vec![0, 1, 2, 0, 1, 2];
         let pred = vec![0, 2, 1, 0, 0, 1];
-        assert_eq!(
-            f1_score(&pred, &actual, Some("macro".to_string())),
-            0.26666665
-        );
+        assert_ulps_eq!(f1_score(&pred, &actual, Some("macro".to_string())), 0.26666666);
     }
 }
