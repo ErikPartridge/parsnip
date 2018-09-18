@@ -15,7 +15,7 @@ pub fn gini(data: &[u64]) -> f32 {
     } 
     fn p_squared(count: usize, len: f32) -> f32 {
         let p = count as f32 / len;
-        return p * p;
+        p * p
     }
     let len = data.len() as f32;
     let mut count = HashMap::new();
@@ -25,7 +25,7 @@ pub fn gini(data: &[u64]) -> f32 {
     let counts: Vec<usize> = count.into_iter().map(|(_, c)| c).collect();
     let indiv : Vec<f32> = counts.iter().map(|x| p_squared(*x, len)).collect();
     let sum : f32 = indiv.iter().sum();
-    return 1.0 - sum;
+    1.0 - sum
 }
 
 /// The categorical accuracy of a dataset
@@ -41,7 +41,7 @@ pub fn categorical_accuracy(pred: &[u64], actual: &[u64]) -> f32 {
     assert_eq!(pred.len(), actual.len());
     let bools =  pred.iter().zip(actual).map(|(x,y)| x == y);
     let truthy : Vec<bool> =  bools.filter(|b| *b).collect();
-    return truthy.len() as f32 / pred.len() as f32;
+    truthy.len() as f32 / pred.len() as f32
 }
 
 fn class_precision(pred: &[u64], actual: &[u64], class: u64) -> f32 {
@@ -50,9 +50,10 @@ fn class_precision(pred: &[u64], actual: &[u64], class: u64) -> f32 {
     let true_positives = true_positives_map.filter(|b| *b).count() as f32;
     let all_positives = pred.iter().map(|p| *p == class).filter(|b| *b).count() as f32;
     if all_positives == 0.0 {
-        return 0.0;
+        0.0
+    } else {
+        true_positives / all_positives
     }
-    return true_positives / all_positives;
 }
 
 fn weighted_precision(pred: &[u64], actual: &[u64]) -> f32 {
@@ -64,7 +65,7 @@ fn weighted_precision(pred: &[u64], actual: &[u64]) -> f32 {
     for value in classes.clone() {
         class_weights.insert(value, actual.iter().filter(|a| **a == value).count() as f32 / actual.len() as f32);
     }
-    return classes.iter().map(|c| class_precision(pred, actual, *c) * class_weights.get(c).unwrap()).sum();
+    classes.iter().map(|c| class_precision(pred, actual, *c) * class_weights.get(c).unwrap()).sum()
 }
 
 fn macro_precision(pred: &[u64], actual: &[u64]) -> f32 {
@@ -76,7 +77,7 @@ fn macro_precision(pred: &[u64], actual: &[u64]) -> f32 {
     for value in classes.clone() {
         class_weights.insert(value, 1.0 / actual.len() as f32);
     }
-    return classes.iter().map(|c| class_precision(pred, actual, *c) / classes.len() as f32).sum();
+    classes.iter().map(|c| class_precision(pred, actual, *c) / classes.len() as f32).sum()
 }
 
 /// The precision of a dataset
@@ -94,10 +95,10 @@ fn macro_precision(pred: &[u64], actual: &[u64]) -> f32 {
 /// ```
 pub fn precision(pred: &[u64], actual: &[u64], average: Option<String>) -> f32 {
     match average {
-        None => return macro_precision(pred, actual),
+        None => macro_precision(pred, actual),
         Some(string) => match string.as_ref() {
-            "macro" => return macro_precision(pred, actual),
-            "weighted" => return weighted_precision(pred, actual),
+            "macro" => macro_precision(pred, actual),
+            "weighted" => weighted_precision(pred, actual),
             _ => panic!("invalid averaging type")
         }
     }
@@ -109,9 +110,10 @@ fn class_recall(pred: &[u64], actual: &[u64], class: u64) -> f32 {
     let true_positives = true_positives_map.filter(|b| *b).count() as f32;
     let tp_fn = actual.iter().map(|a| *a == class).filter(|b| *b).count() as f32;
     if tp_fn == 0.0 {
-        return 0.0;
+        0.0
+    } else {
+        true_positives / tp_fn
     }
-    return true_positives / tp_fn;
 }
 
 fn weighted_recall(pred: &[u64], actual: &[u64]) -> f32 {
@@ -123,7 +125,7 @@ fn weighted_recall(pred: &[u64], actual: &[u64]) -> f32 {
     for value in classes.clone() {
         class_weights.insert(value, actual.iter().filter(|a| **a == value).count() as f32 / actual.len() as f32);
     }
-    return classes.iter().map(|c| class_recall(pred, actual, *c) * class_weights.get(c).unwrap()).sum();
+    classes.iter().map(|c| class_recall(pred, actual, *c) * class_weights.get(c).unwrap()).sum()
 }
 
 fn macro_recall(pred: &[u64], actual: &[u64]) -> f32 {
@@ -135,7 +137,7 @@ fn macro_recall(pred: &[u64], actual: &[u64]) -> f32 {
     for value in classes.clone() {
         class_weights.insert(value, 1.0 / actual.len() as f32);
     }
-    return classes.iter().map(|c| class_recall(pred, actual, *c) / classes.len() as f32).sum();
+    classes.iter().map(|c| class_recall(pred, actual, *c) / classes.len() as f32).sum()
 }
 
 /// The recall of a dataset
@@ -153,10 +155,10 @@ fn macro_recall(pred: &[u64], actual: &[u64]) -> f32 {
 /// ```
 pub fn recall(pred: &[u64], actual: &[u64], average: Option<String>) -> f32 {
     match average {
-        None => return macro_recall(pred, actual),
+        None => macro_recall(pred, actual),
         Some(string) => match string.as_ref() {
-            "macro" => return macro_recall(pred, actual),
-            "weighted" => return weighted_recall(pred, actual),
+            "macro" => macro_recall(pred, actual),
+            "weighted" => weighted_recall(pred, actual),
             _ => panic!("invalid averaging type")
         }
     }
@@ -165,13 +167,13 @@ pub fn recall(pred: &[u64], actual: &[u64], average: Option<String>) -> f32 {
 fn macro_f1(pred: &[u64], actual: &[u64]) -> f32 {
     let recall = macro_recall(pred, actual);
     let precision = macro_precision(pred, actual);
-    return 2.0 * (recall * precision) / (recall + precision);
+    2.0 * (recall * precision) / (recall + precision)
 }
 
 fn weighted_f1(pred: &[u64], actual: &[u64]) -> f32 {
     let recall = weighted_recall(pred, actual);
     let precision = weighted_precision(pred, actual);
-    return 2.0 * (recall * precision) / (recall + precision);
+    2.0 * (recall * precision) / (recall + precision)
 
 }
 
@@ -191,10 +193,10 @@ fn weighted_f1(pred: &[u64], actual: &[u64]) -> f32 {
 /// ```
 pub fn f1_score(pred: &[u64], actual: &[u64], average: Option<String>) -> f32 {
     match average {
-        None => return macro_f1(pred, actual),
+        None => macro_f1(pred, actual),
         Some(string) => match string.as_ref() {
-            "macro" => return macro_f1(pred, actual),
-            "weighted" => return weighted_f1(pred, actual),
+            "macro" => macro_f1(pred, actual),
+            "weighted" => weighted_f1(pred, actual),
             _ => panic!("invalid averaging type")
         }
     }
@@ -214,7 +216,7 @@ pub fn f1_score(pred: &[u64], actual: &[u64], average: Option<String>) -> f32 {
 /// assert_eq!(hamming_loss(&pred, &actual), 0.6);
 /// ```
 pub fn hamming_loss(pred: &[u64], actual: &[u64]) -> f32 {
-    return 1.0 - categorical_accuracy(pred, actual);
+    1.0 - categorical_accuracy(pred, actual)
 }
 
 fn macro_fbeta_score(pred: &[u64], actual: &[u64], beta: f32) -> f32 {
@@ -222,7 +224,7 @@ fn macro_fbeta_score(pred: &[u64], actual: &[u64], beta: f32) -> f32 {
     let recall = macro_recall(pred, actual);
     let top = (1.0 + beta * beta)  * (recall * precision);
     let bottom = (beta * beta * precision) + recall;
-    return top / bottom;
+    top / bottom
 }
 
 fn weighted_fbeta_score(pred: &[u64], actual: &[u64], beta: f32) -> f32 {
@@ -230,7 +232,7 @@ fn weighted_fbeta_score(pred: &[u64], actual: &[u64], beta: f32) -> f32 {
     let recall = weighted_recall(pred, actual);
     let top = (1.0 + beta * beta)  * (recall * precision);
     let bottom = (beta * beta * precision) + recall;
-    return top / bottom;
+    top / bottom
 }
 
 /// The fbeta of a dataset
@@ -249,10 +251,10 @@ fn weighted_fbeta_score(pred: &[u64], actual: &[u64], beta: f32) -> f32 {
 /// ```
 pub fn fbeta_score(pred: &[u64], actual: &[u64], beta: f32, average: Option<String>) -> f32 {
     match average {
-        None => return macro_fbeta_score(pred, actual, beta),
+        None => macro_fbeta_score(pred, actual, beta),
         Some(string) => match string.as_ref() {
-            "macro" => return macro_fbeta_score(pred, actual, beta),
-            "weighted" => return weighted_fbeta_score(pred, actual, beta),
+            "macro" => macro_fbeta_score(pred, actual, beta),
+            "weighted" => weighted_fbeta_score(pred, actual, beta),
             _ => panic!("invalid averaging type")
         }
     }
@@ -272,7 +274,7 @@ pub fn fbeta_score(pred: &[u64], actual: &[u64], beta: f32, average: Option<Stri
 /// assert_eq!(jaccard_similiarity_score(&pred, &actual), 0.5);
 /// ```
 pub fn jaccard_similiarity_score(pred: &[u64], actual: &[u64]) -> f32 {
-    return categorical_accuracy(pred, actual);
+    categorical_accuracy(pred, actual)
 }
 
 
