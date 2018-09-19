@@ -36,18 +36,18 @@ pub fn gini<T: Unsigned + ToPrimitive>(data: &[T]) -> f32 {
 /// Returns a float where 1.0 is a perfectly accurate dataset
 /// ```
 /// use parsnip::categorical_accuracy;
-/// let pred = vec![0, 0, 0 , 1, 2];
-/// let actual = vec![1, 1, 1, 1, 2];
+/// let pred : Vec<u16> = vec![0, 0, 0 , 1, 2];
+/// let actual : Vec<u16> = vec![1, 1, 1, 1, 2];
 /// assert_eq!(categorical_accuracy(&pred, &actual), 0.4);
 /// ```
-pub fn categorical_accuracy(pred: &[u64], actual: &[u64]) -> f32 {
+pub fn categorical_accuracy<T: Unsigned + ToPrimitive>(pred: &[T], actual: &[T]) -> f32 {
     assert_eq!(pred.len(), actual.len());
     let bools =  pred.iter().zip(actual).map(|(x,y)| x == y);
     let truthy : Vec<bool> =  bools.filter(|b| *b).collect();
     return truthy.len() as f32 / pred.len() as f32;
 }
 
-fn class_precision(pred: &[u64], actual: &[u64], class: u64) -> f32 {
+fn class_precision<T: Unsigned + ToPrimitive>(pred: &[T], actual: &[T], class: T) -> f32 {
     assert_eq!(pred.len(), actual.len());
     let true_positives_map = pred.iter().zip(actual).map(|(p, a)| p == a && *p == class);
     let true_positives = true_positives_map.filter(|b| *b).count() as f32;
@@ -296,15 +296,15 @@ mod tests {
 
     #[test]
     fn test_categorical_accuracy() {
-        let pred = vec![0, 1, 0, 1, 0, 1];
-        let real = vec![0, 0, 0, 0, 1, 0];
+        let pred : Vec<u16> = vec![0, 1, 0, 1, 0, 1];
+        let real : Vec<u16> = vec![0, 0, 0, 0, 1, 0];
         assert_eq!(0.33333334, categorical_accuracy(&pred, &real));
     }
 
     #[test]
     fn test_class_precision() {
-        let actual = vec![0, 1, 2, 0, 1, 2];
-        let pred = vec![0, 2, 1, 0, 0, 1];
+        let actual = vec![0_u16, 1, 2, 0, 1, 2];
+        let pred : Vec<u16> = vec![0, 2, 1, 0, 0, 1];
         assert_eq!(0.6666667, class_precision(&pred, &actual, 0));
     }
 
