@@ -1,5 +1,8 @@
+use num::cast::ToPrimitive;
 use std::collections::HashMap;
+extern crate num;
 
+use num::Unsigned;
 /// Compute the gini impurity of a dataset. 
 /// 
 /// Returns a float, 0 representing a perfectly pure dataset. Normal distribution: ~0.33
@@ -7,9 +10,9 @@ use std::collections::HashMap;
 /// By default, any empty dataset will return a gini of 1.0. This may be unexpected behaviour.
 /// ```
 /// use parsnip::gini;
-/// assert_eq!(gini(&vec![0, 0, 0, 1]), 0.375);
+/// assert_eq!(gini(&vec![0_usize, 0, 0, 1]), 0.375);
 /// ```
-pub fn gini(data: &[u64]) -> f32 {
+pub fn gini<T: Unsigned + ToPrimitive>(data: &[T]) -> f32 {
     if data.len() == 0 {
         return 1.0;
     } 
@@ -19,8 +22,8 @@ pub fn gini(data: &[u64]) -> f32 {
     }
     let len = data.len() as f32;
     let mut count = HashMap::new();
-    for &value in data {
-        *count.entry(value).or_insert(0) += 1;
+    for ref value in data {
+        *count.entry(value.to_usize().unwrap()).or_insert(0) += 1;
     }
     let counts: Vec<usize> = count.into_iter().map(|(_, c)| c).collect();
     let indiv : Vec<f32> = counts.iter().map(|x| p_squared(*x, len)).collect();
@@ -276,16 +279,17 @@ pub fn jaccard_similiarity_score(pred: &[u64], actual: &[u64]) -> f32 {
 }
 
 
+
 #[cfg(test)]
 mod tests {
     use super::*;
     #[test]
     fn test_gini() {
-        let vec = vec![0, 0, 0, 1];
+        let vec : Vec<usize> = vec![0, 0, 0, 1];
         assert_eq!(0.375, gini(&vec));
-        let v2 = vec![0, 0];
+        let v2 : Vec<usize> = vec![0, 0];
         assert_eq!(0.0, gini(&v2));
-        let mut v3 = vec![0];
+        let mut v3: Vec<usize> = vec![0];
         v3.pop();
         assert_eq!(1.0, gini(&v3));
     }
