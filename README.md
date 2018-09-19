@@ -1,5 +1,6 @@
 # parsnip
 
+[![Coverage Status](https://coveralls.io/repos/github/ErikPartridge/parsnip/badge.svg?branch=master)](https://coveralls.io/github/ErikPartridge/parsnip?branch=master)
 High performance data science metrics implemented in Rust.
 
 ### Goals
