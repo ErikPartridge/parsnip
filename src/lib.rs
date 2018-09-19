@@ -2,6 +2,7 @@ use num::cast::ToPrimitive;
 use std::collections::HashMap;
 extern crate num;
 use num::Unsigned;
+
 /// Compute the gini impurity of a dataset. 
 /// 
 /// Returns a float, 0 representing a perfectly pure dataset. Normal distribution: ~0.33
@@ -88,12 +89,12 @@ fn macro_precision<T: Unsigned + ToPrimitive + Ord + Clone>(pred: &[T], actual: 
 /// ```
 /// use parsnip::precision;
 /// 
-/// let actual = vec![0, 1, 2, 0, 1, 2];
-/// let pred = vec![0, 2, 1, 0, 0, 1];
+/// let actual = vec![0_u8, 1, 2, 0, 1, 2];
+/// let pred = vec![0_u8, 2, 1, 0, 0, 1];
 /// 
 /// assert_eq!(precision(&pred, &actual, Some("macro".to_string())), 0.22222222);
 /// ```
-pub fn precision(pred: &[u64], actual: &[u64], average: Option<String>) -> f32 {
+pub fn precision<T: Unsigned + ToPrimitive + Ord + Clone>(pred: &[T], actual: &[T], average: Option<String>) -> f32 {
     match average {
         None => return macro_precision(pred, actual),
         Some(string) => match string.as_ref() {
@@ -104,7 +105,7 @@ pub fn precision(pred: &[u64], actual: &[u64], average: Option<String>) -> f32 {
     }
 }
 
-fn class_recall(pred: &[u64], actual: &[u64], class: u64) -> f32 {
+fn class_recall<T: Unsigned>(pred: &[T], actual: &[T], class: T) -> f32 {
     assert_eq!(pred.len(), actual.len());
     let true_positives = pred.iter().zip(actual).filter(|(p, a)| p == a && **a == class).count() as f32;
     let tp_fn = actual.iter().filter(|a| **a == class).count() as f32;
@@ -114,28 +115,28 @@ fn class_recall(pred: &[u64], actual: &[u64], class: u64) -> f32 {
     return true_positives / tp_fn;
 }
 
-fn weighted_recall(pred: &[u64], actual: &[u64]) -> f32 {
+fn weighted_recall<T: Unsigned + ToPrimitive + Ord + Clone>(pred: &[T], actual: &[T]) -> f32 {
     assert_eq!(pred.len(), actual.len());
-    let mut classes : Vec<u64> = pred.into_iter().map(|x| *x).collect();
+    let mut classes : Vec<&T> = pred.into_iter().collect();
     let mut class_weights = HashMap::new();
     classes.sort();
     classes.dedup();
     for value in classes.clone() {
-        class_weights.insert(value, actual.iter().filter(|a| **a == value).count() as f32 / actual.len() as f32);
+        class_weights.insert(value.to_usize().unwrap(), actual.iter().filter(|a| **a == *value).count() as f32 / actual.len() as f32);
     }
-    return classes.iter().map(|c| class_recall(pred, actual, *c) * class_weights.get(c).unwrap()).sum();
+    return classes.iter().map(|c| class_recall(pred, actual, (*c).clone()) * class_weights.get(&c.to_usize().unwrap()).unwrap()).sum();
 }
 
-fn macro_recall(pred: &[u64], actual: &[u64]) -> f32 {
+fn macro_recall<T: Unsigned + ToPrimitive + Ord + Clone>(pred: &[T], actual: &[T]) -> f32 {
     assert_eq!(pred.len(), actual.len());
-    let mut classes : Vec<u64> = pred.into_iter().map(|x| *x).collect();
+    let mut classes : Vec<&T> = pred.into_iter().collect();
     let mut class_weights = HashMap::new();
     classes.sort();
     classes.dedup();
     for value in classes.clone() {
-        class_weights.insert(value, 1.0 / actual.len() as f32);
+        class_weights.insert(value.to_usize().unwrap(), 1.0 / actual.len() as f32);
     }
-    return classes.iter().map(|c| class_recall(pred, actual, *c) / classes.len() as f32).sum();
+    return classes.iter().map(|c| class_recall(pred, actual, (*c).clone()) / classes.len() as f32).sum();
 }
 
 /// The recall of a dataset
@@ -146,12 +147,12 @@ fn macro_recall(pred: &[u64], actual: &[u64]) -> f32 {
 /// ```
 /// use parsnip::recall;
 /// 
-/// let actual = vec![0, 1, 2, 0, 1, 2];
-/// let pred = vec![0, 2, 1, 0, 0, 1];
+/// let actual = vec![0_u8, 1, 2, 0, 1, 2];
+/// let pred = vec![0_u8, 2, 1, 0, 0, 1];
 /// 
 /// assert_eq!(recall(&pred, &actual, Some("macro".to_string())), 0.333333334);
 /// ```
-pub fn recall(pred: &[u64], actual: &[u64], average: Option<String>) -> f32 {
+pub fn recall<T: Unsigned + ToPrimitive + Ord + Clone>(pred: &[T], actual: &[T], average: Option<String>) -> f32 {
     match average {
         None => return macro_recall(pred, actual),
         Some(string) => match string.as_ref() {
@@ -162,13 +163,13 @@ pub fn recall(pred: &[u64], actual: &[u64], average: Option<String>) -> f32 {
     }
 }
 
-fn macro_f1(pred: &[u64], actual: &[u64]) -> f32 {
+fn macro_f1<T: Unsigned + ToPrimitive + Ord + Clone>(pred: &[T], actual: &[T]) -> f32 {
     let recall = macro_recall(pred, actual);
     let precision = macro_precision(pred, actual);
     return 2.0 * (recall * precision) / (recall + precision);
 }
 
-fn weighted_f1(pred: &[u64], actual: &[u64]) -> f32 {
+fn weighted_f1<T: Unsigned + ToPrimitive + Ord + Clone>(pred: &[T], actual: &[T]) -> f32 {
     let recall = weighted_recall(pred, actual);
     let precision = weighted_precision(pred, actual);
     return 2.0 * (recall * precision) / (recall + precision);
@@ -183,13 +184,13 @@ fn weighted_f1(pred: &[u64], actual: &[u64]) -> f32 {
 /// ```
 /// use parsnip::f1_score;
 /// 
-/// let actual = vec![0, 1, 2, 0, 1, 2];
-/// let pred = vec![0, 2, 1, 0, 0, 1];
+/// let actual = vec![0_u8, 1, 2, 0, 1, 2];
+/// let pred = vec![0_u8, 2, 1, 0, 0, 1];
 /// 
 /// assert_eq!(f1_score(&pred, &actual, Some("macro".to_string())), 0.26666665);
 /// assert_eq!(f1_score(&pred, &actual, Some("weighted".to_string())), 0.26666668);
 /// ```
-pub fn f1_score(pred: &[u64], actual: &[u64], average: Option<String>) -> f32 {
+pub fn f1_score<T: Unsigned + ToPrimitive + Ord + Clone>(pred: &[T], actual: &[T], average: Option<String>) -> f32 {
     match average {
         None => return macro_f1(pred, actual),
         Some(string) => match string.as_ref() {
@@ -208,16 +209,16 @@ pub fn f1_score(pred: &[u64], actual: &[u64], average: Option<String>) -> f32 {
 /// ```
 /// use parsnip::hamming_loss;
 /// 
-/// let actual = vec![0, 1, 2, 0, 0];
-/// let pred = vec![0, 2, 1, 0, 1];
+/// let actual = vec![0_u8, 1, 2, 0, 0];
+/// let pred = vec![0_u8, 2, 1, 0, 1];
 /// 
 /// assert_eq!(hamming_loss(&pred, &actual), 0.6);
 /// ```
-pub fn hamming_loss(pred: &[u64], actual: &[u64]) -> f32 {
+pub fn hamming_loss<T: Unsigned + ToPrimitive>(pred: &[T], actual: &[T]) -> f32 {
     return 1.0 - categorical_accuracy(pred, actual);
 }
 
-fn macro_fbeta_score(pred: &[u64], actual: &[u64], beta: f32) -> f32 {
+fn macro_fbeta_score<T: Unsigned + ToPrimitive + Ord + Clone>(pred: &[T], actual: &[T], beta: f32) -> f32 {
     let precision = macro_precision(pred, actual);
     let recall = macro_recall(pred, actual);
     let top = (1.0 + beta * beta)  * (recall * precision);
@@ -225,7 +226,7 @@ fn macro_fbeta_score(pred: &[u64], actual: &[u64], beta: f32) -> f32 {
     return top / bottom;
 }
 
-fn weighted_fbeta_score(pred: &[u64], actual: &[u64], beta: f32) -> f32 {
+fn weighted_fbeta_score<T: Unsigned + ToPrimitive + Ord + Clone>(pred: &[T], actual: &[T], beta: f32) -> f32 {
     let precision = weighted_precision(pred, actual);
     let recall = weighted_recall(pred, actual);
     let top = (1.0 + beta * beta)  * (recall * precision);
@@ -241,13 +242,13 @@ fn weighted_fbeta_score(pred: &[u64], actual: &[u64], beta: f32) -> f32 {
 /// ```
 /// use parsnip::fbeta_score;
 /// 
-/// let actual = vec![0, 1, 2, 0, 1, 2];
-/// let pred = vec![0, 2, 1, 0, 0, 1];
+/// let actual = vec![0_u8, 1, 2, 0, 1, 2];
+/// let pred = vec![0_u8, 2, 1, 0, 0, 1];
 /// 
 /// assert_eq!(fbeta_score(&pred, &actual, 0.5, Some("macro".to_string())), 0.23809524);
 /// assert_eq!(fbeta_score(&pred, &actual, 0.5, Some("weighted".to_string())), 0.23809527);
 /// ```
-pub fn fbeta_score(pred: &[u64], actual: &[u64], beta: f32, average: Option<String>) -> f32 {
+pub fn fbeta_score<T: Unsigned + ToPrimitive + Ord + Clone>(pred: &[T], actual: &[T], beta: f32, average: Option<String>) -> f32 {
     match average {
         None => return macro_fbeta_score(pred, actual, beta),
         Some(string) => match string.as_ref() {
@@ -266,12 +267,12 @@ pub fn fbeta_score(pred: &[u64], actual: &[u64], beta: f32, average: Option<Stri
 /// ```
 /// use parsnip::jaccard_similiarity_score;
 /// 
-/// let actual = vec![0, 2, 1, 3];
-/// let pred = vec![0, 1, 2, 3];
+/// let actual = vec![0_u8, 2, 1, 3];
+/// let pred = vec![0_u8, 1, 2, 3];
 /// 
 /// assert_eq!(jaccard_similiarity_score(&pred, &actual), 0.5);
 /// ```
-pub fn jaccard_similiarity_score(pred: &[u64], actual: &[u64]) -> f32 {
+pub fn jaccard_similiarity_score<T: Unsigned + ToPrimitive>(pred: &[T], actual: &[T]) -> f32 {
     return categorical_accuracy(pred, actual);
 }
 
@@ -307,8 +308,8 @@ mod tests {
 
     #[test]
     fn test_class_recall() {
-        let actual = vec![0, 1, 2, 0, 0, 0];
-        let pred = vec![0, 2, 1, 0, 0, 1];
+        let actual = vec![0_u16, 1, 2, 0, 0, 0];
+        let pred = vec![0_u16, 2, 1, 0, 0, 1];
         assert_eq!(0.75, class_recall(&pred, &actual, 0));
     }
 
@@ -328,22 +329,22 @@ mod tests {
 
         #[test]
     fn test_macro_recall() {
-        let actual = vec![0, 1, 2, 0, 1, 2];
-        let pred = vec![0, 2, 1, 0, 0, 1];
+        let actual = vec![0_u8, 1, 2, 0, 1, 2];
+        let pred = vec![0_u8, 2, 1, 0, 0, 1];
         assert_eq!(0.33333334, macro_recall(&pred, &actual));
     }
 
         #[test]
     fn test_weighted_recall() {
-        let actual = vec![0, 1, 2, 0, 1, 2];
-        let pred = vec![0, 2, 1, 0, 0, 1];
+        let actual = vec![0_u8, 1, 2, 0, 1, 2];
+        let pred = vec![0_u8, 2, 1, 0, 0, 1];
         assert_eq!(0.333333334, weighted_recall(&pred, &actual));
     }
 
     #[test]
     fn test_f1_score() {
-        let actual = vec![0, 1, 2, 0, 1, 2];
-        let pred = vec![0, 2, 1, 0, 0, 1];
+        let actual = vec![0_u8, 1, 2, 0, 1, 2];
+        let pred = vec![0_u8, 2, 1, 0, 0, 1];
         assert_eq!(f1_score(&pred, &actual, Some("macro".to_string())), 0.26666665);
     }
 }
