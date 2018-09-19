@@ -116,12 +116,14 @@ where
 ///
 /// Supports macro and weighted averages
 /// ```
+/// # extern crate parsnip;
+/// #[macro_use] extern crate approx;
 /// use parsnip::precision;
 ///
 /// let actual = vec![0, 1, 2, 0, 1, 2];
 /// let pred = vec![0, 2, 1, 0, 0, 1];
-///
-/// assert_eq!(precision(&pred, &actual, Some("macro".to_string())), 0.22222222);
+/// 
+/// assert_ulps_eq!(precision(&pred, &actual, Some("macro".to_string())), 0.22222222);
 /// ```
 pub fn precision<T>(pred: &[T], actual: &[T], average: Option<String>) -> f32
 where
@@ -195,12 +197,14 @@ where
 ///
 /// Supports macro and weighted averages
 /// ```
+/// # extern crate parsnip;
+/// #[macro_use] extern crate approx;
 /// use parsnip::recall;
 ///
 /// let actual = vec![0, 1, 2, 0, 1, 2];
 /// let pred = vec![0, 2, 1, 0, 0, 1];
-///
-/// assert_eq!(recall(&pred, &actual, Some("macro".to_string())), 0.333333334);
+/// 
+/// assert_ulps_eq!(recall(&pred, &actual, Some("macro".to_string())), 0.333333333);
 /// ```
 pub fn recall<T>(pred: &[T], actual: &[T], average: Option<String>) -> f32
 where
@@ -243,13 +247,15 @@ where
 ///
 /// Supports macro and weighted averages
 /// ```
+/// # extern crate parsnip;
+/// #[macro_use] extern crate approx;
 /// use parsnip::f1_score;
 ///
 /// let actual = vec![0, 1, 2, 0, 1, 2];
 /// let pred = vec![0, 2, 1, 0, 0, 1];
-///
-/// assert_eq!(f1_score(&pred, &actual, Some("macro".to_string())), 0.26666665);
-/// assert_eq!(f1_score(&pred, &actual, Some("weighted".to_string())), 0.26666668);
+/// 
+/// assert_ulps_eq!(f1_score(&pred, &actual, Some("macro".to_string())), 0.26666666);
+/// assert_ulps_eq!(f1_score(&pred, &actual, Some("weighted".to_string())), 0.26666666);
 /// ```
 pub fn f1_score<T>(pred: &[T], actual: &[T], average: Option<String>) -> f32
 where
@@ -316,13 +322,15 @@ where
 ///
 /// Supports macro and weighted averages
 /// ```
+/// # extern crate parsnip;
+/// #[macro_use] extern crate approx;
 /// use parsnip::fbeta_score;
 ///
 /// let actual = vec![0, 1, 2, 0, 1, 2];
 /// let pred = vec![0, 2, 1, 0, 0, 1];
-///
-/// assert_eq!(fbeta_score(&pred, &actual, 0.5, Some("macro".to_string())), 0.23809524);
-/// assert_eq!(fbeta_score(&pred, &actual, 0.5, Some("weighted".to_string())), 0.23809527);
+/// 
+/// assert_ulps_eq!(fbeta_score(&pred, &actual, 0.5, Some("macro".to_string())), 0.23809524);
+/// assert_ulps_eq!(fbeta_score(&pred, &actual, 0.5, Some("weighted".to_string())), 0.23809527);
 /// ```
 pub fn fbeta_score<T>(pred: &[T], actual: &[T], beta: f32, average: Option<String>) -> f32
 where
