@@ -3,7 +3,6 @@ name = "parsnip"
 version = "0.2.2"
 authors = ["Erik A. Partridge <erik.partridge@mail.mcgill.ca>"]
 license = "MIT"
-homepage = "https://github.com/ErikPartridge/parsnip"
 repository = "https://github.com/ErikPartridge/parsnip"
 categories = ["science"]
 description = "Data science metrics (presently categorical only) for Rust."

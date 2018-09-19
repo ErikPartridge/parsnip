@@ -18,7 +18,7 @@ pub fn gini<T: Unsigned + ToPrimitive>(data: &[T]) -> f32 {
     } 
     fn p_squared(count: usize, len: f32) -> f32 {
         let p = count as f32 / len;
-        return p * p;
+        p * p
     }
     let len = data.len() as f32;
     let mut count = HashMap::new();
@@ -28,7 +28,7 @@ pub fn gini<T: Unsigned + ToPrimitive>(data: &[T]) -> f32 {
     let counts: Vec<usize> = count.into_iter().map(|(_, c)| c).collect();
     let indiv : Vec<f32> = counts.iter().map(|x| p_squared(*x, len)).collect();
     let sum : f32 = indiv.iter().sum();
-    return 1.0 - sum;
+    1.0 - sum
 }
 
 /// The categorical accuracy of a dataset
@@ -52,9 +52,10 @@ fn class_precision<T: Unsigned + ToPrimitive>(pred: &[T], actual: &[T], class: T
     let true_positives = pred.iter().zip(actual).filter(|(p, a)| p == a && **p == class).count() as f32;
     let all_positives = pred.iter().filter(|p| **p == class).count() as f32;
     if all_positives == 0.0 {
-        return 0.0;
+        0.0
+    } else {
+        true_positives / all_positives
     }
-    return true_positives / all_positives;
 }
 
 fn weighted_precision<T: Unsigned + ToPrimitive + Ord + Clone>(pred: &[T], actual: &[T]) -> f32 {
@@ -96,10 +97,10 @@ fn macro_precision<T: Unsigned + ToPrimitive + Ord + Clone>(pred: &[T], actual: 
 /// ```
 pub fn precision<T: Unsigned + ToPrimitive + Ord + Clone>(pred: &[T], actual: &[T], average: Option<String>) -> f32 {
     match average {
-        None => return macro_precision(pred, actual),
+        None => macro_precision(pred, actual),
         Some(string) => match string.as_ref() {
-            "macro" => return macro_precision(pred, actual),
-            "weighted" => return weighted_precision(pred, actual),
+            "macro" => macro_precision(pred, actual),
+            "weighted" => weighted_precision(pred, actual),
             _ => panic!("invalid averaging type")
         }
     }
@@ -110,9 +111,10 @@ fn class_recall<T: Unsigned>(pred: &[T], actual: &[T], class: T) -> f32 {
     let true_positives = pred.iter().zip(actual).filter(|(p, a)| p == a && **a == class).count() as f32;
     let tp_fn = actual.iter().filter(|a| **a == class).count() as f32;
     if tp_fn == 0.0 {
-        return 0.0;
+        0.0
+    } else {
+        true_positives / tp_fn
     }
-    return true_positives / tp_fn;
 }
 
 fn weighted_recall<T: Unsigned + ToPrimitive + Ord + Clone>(pred: &[T], actual: &[T]) -> f32 {
@@ -154,10 +156,10 @@ fn macro_recall<T: Unsigned + ToPrimitive + Ord + Clone>(pred: &[T], actual: &[T
 /// ```
 pub fn recall<T: Unsigned + ToPrimitive + Ord + Clone>(pred: &[T], actual: &[T], average: Option<String>) -> f32 {
     match average {
-        None => return macro_recall(pred, actual),
+        None => macro_recall(pred, actual),
         Some(string) => match string.as_ref() {
-            "macro" => return macro_recall(pred, actual),
-            "weighted" => return weighted_recall(pred, actual),
+            "macro" => macro_recall(pred, actual),
+            "weighted" => weighted_recall(pred, actual),
             _ => panic!("invalid averaging type")
         }
     }
@@ -166,13 +168,13 @@ pub fn recall<T: Unsigned + ToPrimitive + Ord + Clone>(pred: &[T], actual: &[T],
 fn macro_f1<T: Unsigned + ToPrimitive + Ord + Clone>(pred: &[T], actual: &[T]) -> f32 {
     let recall = macro_recall(pred, actual);
     let precision = macro_precision(pred, actual);
-    return 2.0 * (recall * precision) / (recall + precision);
+    2.0 * (recall * precision) / (recall + precision)
 }
 
 fn weighted_f1<T: Unsigned + ToPrimitive + Ord + Clone>(pred: &[T], actual: &[T]) -> f32 {
     let recall = weighted_recall(pred, actual);
     let precision = weighted_precision(pred, actual);
-    return 2.0 * (recall * precision) / (recall + precision);
+    2.0 * (recall * precision) / (recall + precision)
 
 }
 
@@ -192,10 +194,10 @@ fn weighted_f1<T: Unsigned + ToPrimitive + Ord + Clone>(pred: &[T], actual: &[T]
 /// ```
 pub fn f1_score<T: Unsigned + ToPrimitive + Ord + Clone>(pred: &[T], actual: &[T], average: Option<String>) -> f32 {
     match average {
-        None => return macro_f1(pred, actual),
+        None => macro_f1(pred, actual),
         Some(string) => match string.as_ref() {
-            "macro" => return macro_f1(pred, actual),
-            "weighted" => return weighted_f1(pred, actual),
+            "macro" => macro_f1(pred, actual),
+            "weighted" => weighted_f1(pred, actual),
             _ => panic!("invalid averaging type")
         }
     }
@@ -223,7 +225,7 @@ fn macro_fbeta_score<T: Unsigned + ToPrimitive + Ord + Clone>(pred: &[T], actual
     let recall = macro_recall(pred, actual);
     let top = (1.0 + beta * beta)  * (recall * precision);
     let bottom = (beta * beta * precision) + recall;
-    return top / bottom;
+    top / bottom
 }
 
 fn weighted_fbeta_score<T: Unsigned + ToPrimitive + Ord + Clone>(pred: &[T], actual: &[T], beta: f32) -> f32 {
@@ -231,7 +233,7 @@ fn weighted_fbeta_score<T: Unsigned + ToPrimitive + Ord + Clone>(pred: &[T], act
     let recall = weighted_recall(pred, actual);
     let top = (1.0 + beta * beta)  * (recall * precision);
     let bottom = (beta * beta * precision) + recall;
-    return top / bottom;
+    top / bottom
 }
 
 /// The fbeta of a dataset
@@ -250,10 +252,10 @@ fn weighted_fbeta_score<T: Unsigned + ToPrimitive + Ord + Clone>(pred: &[T], act
 /// ```
 pub fn fbeta_score<T: Unsigned + ToPrimitive + Ord + Clone>(pred: &[T], actual: &[T], beta: f32, average: Option<String>) -> f32 {
     match average {
-        None => return macro_fbeta_score(pred, actual, beta),
+        None => macro_fbeta_score(pred, actual, beta),
         Some(string) => match string.as_ref() {
-            "macro" => return macro_fbeta_score(pred, actual, beta),
-            "weighted" => return weighted_fbeta_score(pred, actual, beta),
+            "macro" => macro_fbeta_score(pred, actual, beta),
+            "weighted" => weighted_fbeta_score(pred, actual, beta),
             _ => panic!("invalid averaging type")
         }
     }
