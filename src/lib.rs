@@ -1,7 +1,6 @@
 use num::cast::ToPrimitive;
 use std::collections::HashMap;
 extern crate num;
-
 use num::Unsigned;
 /// Compute the gini impurity of a dataset. 
 /// 
@@ -42,44 +41,43 @@ pub fn gini<T: Unsigned + ToPrimitive>(data: &[T]) -> f32 {
 /// ```
 pub fn categorical_accuracy<T: Unsigned + ToPrimitive>(pred: &[T], actual: &[T]) -> f32 {
     assert_eq!(pred.len(), actual.len());
-    let bools =  pred.iter().zip(actual).map(|(x,y)| x == y);
-    let truthy : Vec<bool> =  bools.filter(|b| *b).collect();
-    return truthy.len() as f32 / pred.len() as f32;
+    let truthy =  pred.iter().zip(actual).filter(|(x,y)| x == y).count();
+    return truthy as f32 / pred.len() as f32;
 }
 
 fn class_precision<T: Unsigned + ToPrimitive>(pred: &[T], actual: &[T], class: T) -> f32 {
     assert_eq!(pred.len(), actual.len());
-    let true_positives_map = pred.iter().zip(actual).map(|(p, a)| p == a && *p == class);
-    let true_positives = true_positives_map.filter(|b| *b).count() as f32;
-    let all_positives = pred.iter().map(|p| *p == class).filter(|b| *b).count() as f32;
+    //First, get the map of all true positives
+    let true_positives = pred.iter().zip(actual).filter(|(p, a)| p == a && **p == class).count() as f32;
+    let all_positives = pred.iter().filter(|p| **p == class).count() as f32;
     if all_positives == 0.0 {
         return 0.0;
     }
     return true_positives / all_positives;
 }
 
-fn weighted_precision(pred: &[u64], actual: &[u64]) -> f32 {
+fn weighted_precision<T: Unsigned + ToPrimitive + Ord + Clone>(pred: &[T], actual: &[T]) -> f32 {
     assert_eq!(pred.len(), actual.len());
-    let mut classes : Vec<u64> = pred.into_iter().map(|x| *x).collect();
+    let mut classes : Vec<&T> = pred.into_iter().collect();
     let mut class_weights = HashMap::new();
     classes.sort();
     classes.dedup();
     for value in classes.clone() {
-        class_weights.insert(value, actual.iter().filter(|a| **a == value).count() as f32 / actual.len() as f32);
+        class_weights.insert(value.to_usize().unwrap(), actual.iter().filter(|a| *a == value).count() as f32 / actual.len() as f32);
     }
-    return classes.iter().map(|c| class_precision(pred, actual, *c) * class_weights.get(c).unwrap()).sum();
+    return classes.iter().map(|c| class_precision(pred, actual, (**c).clone()) * class_weights.get(&c.to_usize().unwrap()).unwrap()).sum();
 }
 
-fn macro_precision(pred: &[u64], actual: &[u64]) -> f32 {
+fn macro_precision<T: Unsigned + ToPrimitive + Ord + Clone>(pred: &[T], actual: &[T]) -> f32 {
     assert_eq!(pred.len(), actual.len());
-    let mut classes : Vec<u64> = pred.into_iter().map(|x| *x).collect();
+    let mut classes : Vec<&T> = pred.into_iter().collect();
     let mut class_weights = HashMap::new();
     classes.sort();
     classes.dedup();
     for value in classes.clone() {
-        class_weights.insert(value, 1.0 / actual.len() as f32);
+        class_weights.insert(value.to_usize().unwrap(), 1.0 / actual.len() as f32);
     }
-    return classes.iter().map(|c| class_precision(pred, actual, *c) / classes.len() as f32).sum();
+    return classes.iter().map(|c| class_precision(pred, actual, (**c).clone()) / classes.len() as f32).sum();
 }
 
 /// The precision of a dataset
@@ -108,9 +106,8 @@ pub fn precision(pred: &[u64], actual: &[u64], average: Option<String>) -> f32 {
 
 fn class_recall(pred: &[u64], actual: &[u64], class: u64) -> f32 {
     assert_eq!(pred.len(), actual.len());
-    let true_positives_map = pred.iter().zip(actual).map(|(p, a)| p == a && *a == class);
-    let true_positives = true_positives_map.filter(|b| *b).count() as f32;
-    let tp_fn = actual.iter().map(|a| *a == class).filter(|b| *b).count() as f32;
+    let true_positives = pred.iter().zip(actual).filter(|(p, a)| p == a && **a == class).count() as f32;
+    let tp_fn = actual.iter().filter(|a| **a == class).count() as f32;
     if tp_fn == 0.0 {
         return 0.0;
     }
@@ -317,15 +314,15 @@ mod tests {
 
     #[test]
     fn test_weighted_precision() {
-        let actual = vec![0, 1, 2, 0, 1, 2];
-        let pred = vec![0, 2, 1, 0, 0, 1];
+        let actual = vec![0_u16, 1, 2, 0, 1, 2];
+        let pred = vec![0_u16, 2, 1, 0, 0, 1];
         assert_eq!(0.22222224, weighted_precision(&pred, &actual));
     }
 
     #[test]
     fn test_macro_precision() {
-        let actual = vec![0, 1, 2, 0, 1, 2];
-        let pred = vec![0, 2, 1, 0, 0, 1];
+        let actual = vec![0_u16, 1, 2, 0, 1, 2];
+        let pred = vec![0_u16, 2, 1, 0, 0, 1];
         assert_eq!(0.22222222, macro_precision(&pred, &actual));
     }
 
