@@ -1,6 +1,28 @@
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::hash::Hash;
+use std::error::Error;
+use std::fmt;
+
+#[derive(Debug)]
+struct LengthError;
+
+impl fmt::Display for LengthError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "The lengths of the predicted and actual datasets must be equal.")
+    }
+}
+
+impl Error for LengthError {
+    fn description(&self) -> &str {
+        "The lengths of the predicted and actual datasets must be equal."
+    } 
+
+    fn cause(&self) -> Option<&Error> {
+        None
+    }
+}
+
 
 /// Compute the gini impurity of a dataset.
 ///
@@ -93,13 +115,13 @@ where
         .sum()
 }
 
-fn macro_precision<T>(pred: &[T], actual: &[T]) -> Result<f32, String>
+fn macro_precision<T>(pred: &[T], actual: &[T]) -> Result<f32, LengthError>
 where
     T: Eq,
     T: Hash,
 {
     if pred.len() != actual.len() {
-        return Err("Array lengths do not match.".to_string());
+        return Err(LengthError);
     }
     let classes: HashSet<_> = pred.into_iter().collect();
     let mut class_weights = HashMap::new();
@@ -125,7 +147,7 @@ where
 ///
 /// assert_eq!(precision(&pred, &actual, Some("macro".to_string())), 0.22222222);
 /// ```
-pub fn precision<T>(pred: &[T], actual: &[T], average: Option<String>) -> Result<f32, String>
+pub fn precision<T>(pred: &[T], actual: &[T], average: Option<String>) -> Result<f32, LengthError>
 where
     T: Eq,
     T: Hash,
