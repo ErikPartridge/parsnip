@@ -93,21 +93,23 @@ where
         .sum()
 }
 
-fn macro_precision<T>(pred: &[T], actual: &[T]) -> f32
+fn macro_precision<T>(pred: &[T], actual: &[T]) -> Result<f32, String>
 where
     T: Eq,
     T: Hash,
 {
-    assert_eq!(pred.len(), actual.len());
+    if pred.len() != actual.len() {
+        return Err("Array lengths do not match.".to_string());
+    }
     let classes: HashSet<_> = pred.into_iter().collect();
     let mut class_weights = HashMap::new();
     for value in classes.clone() {
         class_weights.insert(value, 1.0 / actual.len() as f32);
     }
-    classes
+    Ok(classes
         .iter()
         .map(|c| class_precision(pred, actual, c) / classes.len() as f32)
-        .sum()
+        .sum())
 }
 
 /// The precision of a dataset
@@ -123,7 +125,7 @@ where
 ///
 /// assert_eq!(precision(&pred, &actual, Some("macro".to_string())), 0.22222222);
 /// ```
-pub fn precision<T>(pred: &[T], actual: &[T], average: Option<String>) -> f32
+pub fn precision<T>(pred: &[T], actual: &[T], average: Option<String>) -> Result<f32, String>
 where
     T: Eq,
     T: Hash,
@@ -132,7 +134,7 @@ where
         None => macro_precision(pred, actual),
         Some(string) => match string.as_ref() {
             "macro" => macro_precision(pred, actual),
-            "weighted" => weighted_precision(pred, actual),
+            "weighted" => Ok(weighted_precision(pred, actual)),
             _ => panic!("invalid averaging type"),
         },
     }
