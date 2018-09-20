@@ -19,7 +19,7 @@ where
     }
     fn p_squared(count: usize, len: f32) -> f32 {
         let p = count as f32 / len;
-        return p * p;
+        p * p
     }
     let len = data.len() as f32;
     let mut count = BTreeMap::new();
@@ -29,7 +29,7 @@ where
     let counts: Vec<usize> = count.into_iter().map(|(_, c)| c).collect();
     let indiv: Vec<f32> = counts.iter().map(|x| p_squared(*x, len)).collect();
     let sum: f32 = indiv.iter().sum();
-    return 1.0 - sum;
+    1.0 - sum;
 }
 
 /// The categorical accuracy of a dataset
@@ -64,9 +64,10 @@ where
         .count() as f32;
     let all_positives = pred.iter().filter(|p| **p == *class).count() as f32;
     if all_positives == 0.0 {
-        return 0.0;
+        0.0
+    } else {
+        true_positives / all_positives
     }
-    return true_positives / all_positives;
 }
 
 
@@ -137,7 +138,7 @@ pub fn precision<T>(
     T: Ord, 
 {
     match average {
-        None => return macro_precision(pred, actual),
+        None => macro_precision(pred, actual),
         Some(string) => match string.as_ref() {
             "macro" => return macro_precision(pred, actual),
             "weighted" => return weighted_precision(pred, actual),
@@ -158,9 +159,10 @@ fn class_recall<T>(pred: &[T], actual: &[T], class: &T) -> f32 where
         .count() as f32;
     let tp_fn = actual.iter().filter(|a| **a == *class).count() as f32;
     if tp_fn == 0.0 {
-        return 0.0;
+        0.0
+    } else {
+        true_positives / tp_fn
     }
-    return true_positives / tp_fn;
 }
 
 
@@ -227,7 +229,7 @@ where
     T: Ord,
 {
     match average {
-        None => return macro_recall(pred, actual),
+        None => macro_recall(pred, actual),
         Some(string) => match string.as_ref() {
             "macro" => return macro_recall(pred, actual),
             "weighted" => return weighted_recall(pred, actual),
@@ -244,7 +246,7 @@ where
 {
     let recall = macro_recall(pred, actual);
     let precision = macro_precision(pred, actual);
-    return 2.0 * (recall * precision) / (recall + precision);
+    2.0 * (recall * precision) / (recall + precision)
 }
 
 #[cfg(not(any(feature = "use_ndarray")))]
@@ -255,7 +257,7 @@ where
 {
     let recall = weighted_recall(pred, actual);
     let precision = weighted_precision(pred, actual);
-    return 2.0 * (recall * precision) / (recall + precision);
+    2.0 * (recall * precision) / (recall + precision)
 }
 
 
@@ -283,7 +285,7 @@ where
     T: Ord,
 {
     match average {
-        None => return macro_f1(pred, actual),
+        None => macro_f1(pred, actual),
         Some(string) => match string.as_ref() {
             "macro" => return macro_f1(pred, actual),
             "weighted" => return weighted_f1(pred, actual),
@@ -327,7 +329,7 @@ where
     let recall = macro_recall(pred, actual);
     let top = (1.0 + beta * beta) * (recall * precision);
     let bottom = (beta * beta * precision) + recall;
-    return top / bottom;
+    top / bottom
 }
 
 fn weighted_fbeta_score<T>(
@@ -343,7 +345,7 @@ where
     let recall = weighted_recall(pred, actual);
     let top = (1.0 + beta * beta) * (recall * precision);
     let bottom = (beta * beta * precision) + recall;
-    return top / bottom;
+    top / bottom
 }
 
 /// The fbeta of a dataset
@@ -371,7 +373,7 @@ where
     T: Ord,
 {
     match average {
-        None => return macro_fbeta_score(pred, actual, beta),
+        None => macro_fbeta_score(pred, actual, beta),
         Some(string) => match string.as_ref() {
             "macro" => return macro_fbeta_score(pred, actual, beta),
             "weighted" => return weighted_fbeta_score(pred, actual, beta),
