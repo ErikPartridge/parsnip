@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::hash::Hash;
-use std::iter::FromIterator;
 
 /// Compute the gini impurity of a dataset.
 ///
@@ -80,7 +79,7 @@ where
     T: Hash,
 {
     assert_eq!(pred.len(), actual.len());
-    let classes: HashSet<_> = HashSet::from_iter(pred);
+    let classes: HashSet<_> = pred.into_iter().collect();
     let mut class_weights = HashMap::new();
     for value in &classes {
         class_weights.insert(
@@ -100,7 +99,7 @@ where
     T: Hash,
 {
     assert_eq!(pred.len(), actual.len());
-    let classes: HashSet<_> = HashSet::from_iter(pred);
+    let classes: HashSet<_> = pred.into_iter().collect();
     let mut class_weights = HashMap::new();
     for value in classes.clone() {
         class_weights.insert(value, 1.0 / actual.len() as f32);
@@ -163,7 +162,7 @@ where
     T: Hash,
 {
     assert_eq!(pred.len(), actual.len());
-    let classes: HashSet<_> = HashSet::from_iter(pred);
+    let classes: HashSet<_> = pred.into_iter().collect();
     let mut class_weights = HashMap::new();
     for value in &classes {
         class_weights.insert(
@@ -183,7 +182,7 @@ where
     T: Hash,
 {
     assert_eq!(pred.len(), actual.len());
-    let classes: HashSet<_> = HashSet::from_iter(pred);
+    let classes: HashSet<_> = pred.into_iter().collect();
     classes
         .iter()
         .map(|c| class_recall(pred, actual, *c) / classes.len() as f32)
