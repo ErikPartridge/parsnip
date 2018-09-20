@@ -10,7 +10,7 @@ use std::iter::FromIterator;
 /// By default, any empty dataset will return a gini of 1.0. This may be unexpected behaviour.
 /// ```
 /// use parsnip::gini;
-/// assert_eq!(gini(&vec![0_usize, 0, 0, 1]), 0.375);
+/// assert_eq!(gini(&vec![0, 0, 0, 1]), 0.375);
 /// ```
 pub fn gini<T>(data: &[T]) -> f32
 where
@@ -26,7 +26,7 @@ where
     }
     let len = data.len() as f32;
     let mut count = HashMap::new();
-    for value in data.iter() {
+    for value in data {
         *count.entry(value).or_insert(0) += 1;
     }
     let sum: f32 = count
@@ -42,8 +42,8 @@ where
 /// Returns a float where 1.0 is a perfectly accurate dataset
 /// ```
 /// use parsnip::categorical_accuracy;
-/// let pred : Vec<_> = vec![0, 0, 0 , 1, 2];
-/// let actual : Vec<_> = vec![1, 1, 1, 1, 2];
+/// let pred = vec![0, 0, 0 , 1, 2];
+/// let actual = vec![1, 1, 1, 1, 2];
 /// assert_eq!(categorical_accuracy(&pred, &actual), 0.4);
 /// ```
 pub fn categorical_accuracy<T>(pred: &[T], actual: &[T]) -> f32
@@ -119,8 +119,8 @@ where
 /// ```
 /// use parsnip::precision;
 ///
-/// let actual = vec![0_u8, 1, 2, 0, 1, 2];
-/// let pred = vec![0_u8, 2, 1, 0, 0, 1];
+/// let actual = vec![0, 1, 2, 0, 1, 2];
+/// let pred = vec![0, 2, 1, 0, 0, 1];
 ///
 /// assert_eq!(precision(&pred, &actual, Some("macro".to_string())), 0.22222222);
 /// ```
@@ -198,8 +198,8 @@ where
 /// ```
 /// use parsnip::recall;
 ///
-/// let actual = vec![0_u8, 1, 2, 0, 1, 2];
-/// let pred = vec![0_u8, 2, 1, 0, 0, 1];
+/// let actual = vec![0, 1, 2, 0, 1, 2];
+/// let pred = vec![0, 2, 1, 0, 0, 1];
 ///
 /// assert_eq!(recall(&pred, &actual, Some("macro".to_string())), 0.333333334);
 /// ```
@@ -246,8 +246,8 @@ where
 /// ```
 /// use parsnip::f1_score;
 ///
-/// let actual = vec![0_u8, 1, 2, 0, 1, 2];
-/// let pred = vec![0_u8, 2, 1, 0, 0, 1];
+/// let actual = vec![0, 1, 2, 0, 1, 2];
+/// let pred = vec![0, 2, 1, 0, 0, 1];
 ///
 /// assert_eq!(f1_score(&pred, &actual, Some("macro".to_string())), 0.26666665);
 /// assert_eq!(f1_score(&pred, &actual, Some("weighted".to_string())), 0.26666668);
@@ -275,8 +275,8 @@ where
 /// ```
 /// use parsnip::hamming_loss;
 ///
-/// let actual = vec![0_u8, 1, 2, 0, 0];
-/// let pred = vec![0_u8, 2, 1, 0, 1];
+/// let actual = vec![0, 1, 2, 0, 0];
+/// let pred = vec![0, 2, 1, 0, 1];
 ///
 /// assert_eq!(hamming_loss(&pred, &actual), 0.6);
 /// ```
@@ -319,8 +319,8 @@ where
 /// ```
 /// use parsnip::fbeta_score;
 ///
-/// let actual = vec![0_u8, 1, 2, 0, 1, 2];
-/// let pred = vec![0_u8, 2, 1, 0, 0, 1];
+/// let actual = vec![0, 1, 2, 0, 1, 2];
+/// let pred = vec![0, 2, 1, 0, 0, 1];
 ///
 /// assert_eq!(fbeta_score(&pred, &actual, 0.5, Some("macro".to_string())), 0.23809524);
 /// assert_eq!(fbeta_score(&pred, &actual, 0.5, Some("weighted".to_string())), 0.23809527);
@@ -348,8 +348,8 @@ where
 /// ```
 /// use parsnip::jaccard_similiarity_score;
 ///
-/// let actual = vec![0_i32, 2, 1, 3];
-/// let pred = vec![0_i32, 1, 2, 3];
+/// let actual = vec![0, 2, 1, 3];
+/// let pred = vec![0, 1, 2, 3];
 ///
 /// assert_eq!(jaccard_similiarity_score(&pred, &actual), 0.5);
 /// ```
@@ -365,68 +365,68 @@ mod tests {
     use super::*;
     #[test]
     fn test_gini() {
-        let vec: Vec<_> = vec![0, 0, 0, 1];
+        let vec = vec![0, 0, 0, 1];
         assert_eq!(0.375, gini(&vec));
-        let v2: Vec<_> = vec![0, 0];
+        let v2 = vec![0, 0];
         assert_eq!(0.0, gini(&v2));
-        let mut v3: Vec<_> = vec![0];
+        let mut v3 = vec![0];
         v3.pop();
         assert_eq!(1.0, gini(&v3));
     }
 
     #[test]
     fn test_categorical_accuracy() {
-        let pred: Vec<_> = vec![0, 1, 0, 1, 0, 1];
-        let real: Vec<_> = vec![0, 0, 0, 0, 1, 0];
+        let pred = vec![0, 1, 0, 1, 0, 1];
+        let real = vec![0, 0, 0, 0, 1, 0];
         assert_eq!(0.33333334, categorical_accuracy(&pred, &real));
     }
 
     #[test]
     fn test_class_precision() {
-        let actual = vec![0_u16, 1, 2, 0, 1, 2];
-        let pred: Vec<_> = vec![0, 2, 1, 0, 0, 1];
+        let actual = vec![0, 1, 2, 0, 1, 2];
+        let pred = vec![0, 2, 1, 0, 0, 1];
         assert_eq!(0.6666667, class_precision(&pred, &actual, &0));
     }
 
     #[test]
     fn test_class_recall() {
-        let actual = vec![0_u16, 1, 2, 0, 0, 0];
-        let pred = vec![0_u16, 2, 1, 0, 0, 1];
+        let actual = vec![0, 1, 2, 0, 0, 0];
+        let pred = vec![0, 2, 1, 0, 0, 1];
         assert_eq!(0.75, class_recall(&pred, &actual, &0));
     }
 
     #[test]
     fn test_weighted_precision() {
-        let actual = vec![0_u16, 1, 2, 0, 1, 2];
-        let pred = vec![0_u16, 2, 1, 0, 0, 1];
+        let actual = vec![0, 1, 2, 0, 1, 2];
+        let pred = vec![0, 2, 1, 0, 0, 1];
         assert_eq!(0.22222224, weighted_precision(&pred, &actual));
     }
 
     #[test]
     fn test_macro_precision() {
-        let actual = vec![0_u16, 1, 2, 0, 1, 2];
-        let pred = vec![0_u16, 2, 1, 0, 0, 1];
+        let actual = vec![0, 1, 2, 0, 1, 2];
+        let pred = vec![0, 2, 1, 0, 0, 1];
         assert_eq!(0.22222222, macro_precision(&pred, &actual));
     }
 
     #[test]
     fn test_macro_recall() {
-        let actual = vec![0_u8, 1, 2, 0, 1, 2];
-        let pred = vec![0_u8, 2, 1, 0, 0, 1];
+        let actual = vec![0, 1, 2, 0, 1, 2];
+        let pred = vec![0, 2, 1, 0, 0, 1];
         assert_eq!(0.33333334, macro_recall(&pred, &actual));
     }
 
     #[test]
     fn test_weighted_recall() {
-        let actual = vec![0_u8, 1, 2, 0, 1, 2];
-        let pred = vec![0_u8, 2, 1, 0, 0, 1];
+        let actual = vec![0, 1, 2, 0, 1, 2];
+        let pred = vec![0, 2, 1, 0, 0, 1];
         assert_eq!(0.333333334, weighted_recall(&pred, &actual));
     }
 
     #[test]
     fn test_f1_score() {
-        let actual = vec![0_u8, 1, 2, 0, 1, 2];
-        let pred = vec![0_u8, 2, 1, 0, 0, 1];
+        let actual = vec![0, 1, 2, 0, 1, 2];
+        let pred = vec![0, 2, 1, 0, 0, 1];
         assert_eq!(
             f1_score(&pred, &actual, Some("macro".to_string())),
             0.26666665
