@@ -15,4 +15,3 @@ is-it-maintained-open-issues = { repository = "ErikPartridge/parsnip" }
 travis-ci = { repository = "ErikPartridge/parsnip", branch = "master" }
 
 [dependencies]
-num = "0.2.0"
