@@ -29,7 +29,7 @@ where
     let counts: Vec<usize> = count.into_iter().map(|(_, c)| c).collect();
     let indiv: Vec<f32> = counts.iter().map(|x| p_squared(*x, len)).collect();
     let sum: f32 = indiv.iter().sum();
-    1.0 - sum;
+    return 1.0 - sum;
 }
 
 /// The categorical accuracy of a dataset
@@ -50,7 +50,6 @@ where
     return truthy as f32 / pred.len() as f32;
 }
 
-
 fn class_precision<T>(pred: &[T], actual: &[T], class: &T) -> f32
 where
     T: Eq,
@@ -70,11 +69,10 @@ where
     }
 }
 
-
-fn weighted_precision<T>(pred: &[T], actual: &[T]) -> f32 
+fn weighted_precision<T>(pred: &[T], actual: &[T]) -> f32
 where
     T: Eq,
-    T: Ord
+    T: Ord,
 {
     assert_eq!(pred.len(), actual.len());
     let mut classes: Vec<&T> = pred.into_iter().collect();
@@ -89,12 +87,9 @@ where
     }
     return classes
         .iter()
-        .map(|c| {
-            class_precision(pred, actual, *c)
-                * class_weights.get(c).unwrap()
-        }).sum();
+        .map(|c| class_precision(pred, actual, *c) * class_weights.get(c).unwrap())
+        .sum();
 }
-
 
 fn macro_precision<T>(pred: &[T], actual: &[T]) -> f32
 where
@@ -115,7 +110,6 @@ where
         .sum();
 }
 
-
 /// The precision of a dataset
 ///
 /// Returns a float where a 1.0 is a perfectly precise result set
@@ -129,13 +123,10 @@ where
 ///
 /// assert_eq!(precision(&pred, &actual, Some("macro".to_string())), 0.22222222);
 /// ```
-pub fn precision<T>(
-    pred: &[T],
-    actual: &[T],
-    average: Option<String>,
-) -> f32 where
+pub fn precision<T>(pred: &[T], actual: &[T], average: Option<String>) -> f32
+where
     T: Eq,
-    T: Ord, 
+    T: Ord,
 {
     match average {
         None => macro_precision(pred, actual),
@@ -147,8 +138,8 @@ pub fn precision<T>(
     }
 }
 
-
-fn class_recall<T>(pred: &[T], actual: &[T], class: &T) -> f32 where
+fn class_recall<T>(pred: &[T], actual: &[T], class: &T) -> f32
+where
     T: Eq,
 {
     assert_eq!(pred.len(), actual.len());
@@ -165,8 +156,8 @@ fn class_recall<T>(pred: &[T], actual: &[T], class: &T) -> f32 where
     }
 }
 
-
-fn weighted_recall<T>(pred: &[T], actual: &[T]) -> f32 where
+fn weighted_recall<T>(pred: &[T], actual: &[T]) -> f32
+where
     T: Eq,
     T: Ord,
 {
@@ -183,14 +174,11 @@ fn weighted_recall<T>(pred: &[T], actual: &[T]) -> f32 where
     }
     return classes
         .iter()
-        .map(|c| {
-            class_recall(pred, actual, *c)
-                * class_weights.get(*c).unwrap()
-        }).sum();
+        .map(|c| class_recall(pred, actual, *c) * class_weights.get(*c).unwrap())
+        .sum();
 }
 
-
-fn macro_recall<T>(pred: &[T], actual: &[T]) -> f32 
+fn macro_recall<T>(pred: &[T], actual: &[T]) -> f32
 where
     T: Eq,
     T: Ord,
@@ -205,7 +193,6 @@ where
         .sum();
 }
 
-
 /// The recall of a dataset
 ///
 /// Returns a float where a 1.0 is a perfectly recalled result set
@@ -219,11 +206,7 @@ where
 ///
 /// assert_eq!(recall(&pred, &actual, Some("macro".to_string())), 0.333333334);
 /// ```
-pub fn recall<T>(
-    pred: &[T],
-    actual: &[T],
-    average: Option<String>,
-) -> f32 
+pub fn recall<T>(pred: &[T], actual: &[T], average: Option<String>) -> f32
 where
     T: Eq,
     T: Ord,
@@ -238,8 +221,7 @@ where
     }
 }
 
-
-fn macro_f1<T>(pred: &[T], actual: &[T]) -> f32 
+fn macro_f1<T>(pred: &[T], actual: &[T]) -> f32
 where
     T: Eq,
     T: Ord,
@@ -260,7 +242,6 @@ where
     2.0 * (recall * precision) / (recall + precision)
 }
 
-
 /// The f1 score of a dataset
 ///
 /// Returns an f1 score where 1 is perfect and 0 is atrocious.
@@ -275,11 +256,7 @@ where
 /// assert_eq!(f1_score(&pred, &actual, Some("macro".to_string())), 0.26666665);
 /// assert_eq!(f1_score(&pred, &actual, Some("weighted".to_string())), 0.26666668);
 /// ```
-pub fn f1_score<T>(
-    pred: &[T],
-    actual: &[T],
-    average: Option<String>,
-) -> f32 
+pub fn f1_score<T>(pred: &[T], actual: &[T], average: Option<String>) -> f32
 where
     T: Eq,
     T: Ord,
@@ -293,7 +270,6 @@ where
         },
     }
 }
-
 
 /// The hamming loss of a dataset
 ///
@@ -315,12 +291,7 @@ where
     return 1.0 - categorical_accuracy(pred, actual);
 }
 
-
-fn macro_fbeta_score<T>(
-    pred: &[T],
-    actual: &[T],
-    beta: f32,
-) -> f32
+fn macro_fbeta_score<T>(pred: &[T], actual: &[T], beta: f32) -> f32
 where
     T: Eq,
     T: Ord,
@@ -332,11 +303,7 @@ where
     top / bottom
 }
 
-fn weighted_fbeta_score<T>(
-    pred: &[T],
-    actual: &[T],
-    beta: f32,
-) -> f32 
+fn weighted_fbeta_score<T>(pred: &[T], actual: &[T], beta: f32) -> f32
 where
     T: Eq,
     T: Ord,
@@ -362,12 +329,7 @@ where
 /// assert_eq!(fbeta_score(&pred, &actual, 0.5, Some("macro".to_string())), 0.23809524);
 /// assert_eq!(fbeta_score(&pred, &actual, 0.5, Some("weighted".to_string())), 0.23809527);
 /// ```
-pub fn fbeta_score<T>(
-    pred: &[T],
-    actual: &[T],
-    beta: f32,
-    average: Option<String>,
-) -> f32 
+pub fn fbeta_score<T>(pred: &[T], actual: &[T], beta: f32, average: Option<String>) -> f32
 where
     T: Eq,
     T: Ord,
