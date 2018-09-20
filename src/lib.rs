@@ -93,21 +93,23 @@ where
         .sum()
 }
 
-fn macro_precision<T>(pred: &[T], actual: &[T]) -> f32
+fn macro_precision<T>(pred: &[T], actual: &[T]) -> Result<f32, String>
 where
     T: Eq,
     T: Hash,
 {
-    assert_eq!(pred.len(), actual.len());
+    if pred.len() != actual.len() {
+        return Err("Array lengths do not match.".to_string());
+    }
     let classes: HashSet<_> = pred.into_iter().collect();
     let mut class_weights = HashMap::new();
     for value in classes.clone() {
         class_weights.insert(value, 1.0 / actual.len() as f32);
     }
-    classes
+    Ok(classes
         .iter()
         .map(|c| class_precision(pred, actual, c) / classes.len() as f32)
-        .sum()
+        .sum())
 }
 
 /// The type of score averaging strategy employed in the calculation of
