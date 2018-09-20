@@ -23,9 +23,9 @@ pub fn gini<T: Unsigned + ToPrimitive>(data: &[T]) -> f32 {
     let len = data.len() as f32;
     let mut count = HashMap::new();
     for ref value in data {
-        *count.entry(value.to_usize().unwrap()).or_insert(0) += 1;
+        *count.entry(value.to_u128().unwrap()).or_insert(0) += 1;
     }
-    let counts: Vec<usize> = count.into_iter().map(|(_, c)| c).collect();
+    let counts: Vec<u128> = count.into_iter().map(|(_, c)| c).collect();
     let indiv : Vec<f32> = counts.iter().map(|x| p_squared(*x, len)).collect();
     let sum : f32 = indiv.iter().sum();
     1.0 - sum
@@ -65,9 +65,9 @@ fn weighted_precision<T: Unsigned + ToPrimitive + Ord + Clone>(pred: &[T], actua
     classes.sort();
     classes.dedup();
     for value in classes.clone() {
-        class_weights.insert(value.to_usize().unwrap(), actual.iter().filter(|a| *a == value).count() as f32 / actual.len() as f32);
+        class_weights.insert(value.to_u128().unwrap(), actual.iter().filter(|a| *a == value).count() as f32 / actual.len() as f32);
     }
-    return classes.iter().map(|c| class_precision(pred, actual, (**c).clone()) * class_weights.get(&c.to_usize().unwrap()).unwrap()).sum();
+    return classes.iter().map(|c| class_precision(pred, actual, (**c).clone()) * class_weights.get(&c.to_u128().unwrap()).unwrap()).sum();
 }
 
 fn macro_precision<T: Unsigned + ToPrimitive + Ord + Clone>(pred: &[T], actual: &[T]) -> f32 {
@@ -77,7 +77,7 @@ fn macro_precision<T: Unsigned + ToPrimitive + Ord + Clone>(pred: &[T], actual: 
     classes.sort();
     classes.dedup();
     for value in classes.clone() {
-        class_weights.insert(value.to_usize().unwrap(), 1.0 / actual.len() as f32);
+        class_weights.insert(value.to_u128().unwrap(), 1.0 / actual.len() as f32);
     }
     return classes.iter().map(|c| class_precision(pred, actual, (**c).clone()) / classes.len() as f32).sum();
 }
@@ -124,9 +124,9 @@ fn weighted_recall<T: Unsigned + ToPrimitive + Ord + Clone>(pred: &[T], actual: 
     classes.sort();
     classes.dedup();
     for value in classes.clone() {
-        class_weights.insert(value.to_usize().unwrap(), actual.iter().filter(|a| **a == *value).count() as f32 / actual.len() as f32);
+        class_weights.insert(value.to_u128().unwrap(), actual.iter().filter(|a| **a == *value).count() as f32 / actual.len() as f32);
     }
-    return classes.iter().map(|c| class_recall(pred, actual, (*c).clone()) * class_weights.get(&c.to_usize().unwrap()).unwrap()).sum();
+    return classes.iter().map(|c| class_recall(pred, actual, (*c).clone()) * class_weights.get(&c.to_u128().unwrap()).unwrap()).sum();
 }
 
 fn macro_recall<T: Unsigned + ToPrimitive + Ord + Clone>(pred: &[T], actual: &[T]) -> f32 {
@@ -136,7 +136,7 @@ fn macro_recall<T: Unsigned + ToPrimitive + Ord + Clone>(pred: &[T], actual: &[T
     classes.sort();
     classes.dedup();
     for value in classes.clone() {
-        class_weights.insert(value.to_usize().unwrap(), 1.0 / actual.len() as f32);
+        class_weights.insert(value.to_u128().unwrap(), 1.0 / actual.len() as f32);
     }
     return classes.iter().map(|c| class_recall(pred, actual, (*c).clone()) / classes.len() as f32).sum();
 }
