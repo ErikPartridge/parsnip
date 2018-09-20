@@ -1,4 +1,7 @@
-use std::collections::BTreeMap;
+use std::collections::HashMap;
+use std::collections::HashSet;
+use std::hash::Hash;
+use std::iter::FromIterator;
 
 /// Compute the gini impurity of a dataset.
 ///
@@ -12,9 +15,9 @@ use std::collections::BTreeMap;
 pub fn gini<T>(data: &[T]) -> f32
 where
     T: Eq,
-    T: Ord,
+    T: Hash,
 {
-    if data.len() == 0 {
+    if data.is_empty() {
         return 1.0;
     }
     fn p_squared(count: usize, len: f32) -> f32 {
@@ -22,14 +25,16 @@ where
         p * p
     }
     let len = data.len() as f32;
-    let mut count = BTreeMap::new();
+    let mut count = HashMap::new();
     for value in data.iter() {
         *count.entry(value).or_insert(0) += 1;
     }
-    let counts: Vec<usize> = count.into_iter().map(|(_, c)| c).collect();
-    let indiv: Vec<f32> = counts.iter().map(|x| p_squared(*x, len)).collect();
-    let sum: f32 = indiv.iter().sum();
-    return 1.0 - sum;
+    let sum: f32 = count
+        .into_iter()
+        .map(|(_, c)| c)
+        .map(|x| p_squared(x, len))
+        .sum();
+    1.0 - sum
 }
 
 /// The categorical accuracy of a dataset
@@ -37,8 +42,8 @@ where
 /// Returns a float where 1.0 is a perfectly accurate dataset
 /// ```
 /// use parsnip::categorical_accuracy;
-/// let pred : Vec<u16> = vec![0, 0, 0 , 1, 2];
-/// let actual : Vec<u16> = vec![1, 1, 1, 1, 2];
+/// let pred : Vec<_> = vec![0, 0, 0 , 1, 2];
+/// let actual : Vec<_> = vec![1, 1, 1, 1, 2];
 /// assert_eq!(categorical_accuracy(&pred, &actual), 0.4);
 /// ```
 pub fn categorical_accuracy<T>(pred: &[T], actual: &[T]) -> f32
@@ -47,7 +52,7 @@ where
 {
     assert_eq!(pred.len(), actual.len());
     let truthy = pred.iter().zip(actual).filter(|(x, y)| x == y).count();
-    return truthy as f32 / pred.len() as f32;
+    truthy as f32 / pred.len() as f32
 }
 
 fn class_precision<T>(pred: &[T], actual: &[T], class: &T) -> f32
@@ -72,42 +77,38 @@ where
 fn weighted_precision<T>(pred: &[T], actual: &[T]) -> f32
 where
     T: Eq,
-    T: Ord,
+    T: Hash,
 {
     assert_eq!(pred.len(), actual.len());
-    let mut classes: Vec<&T> = pred.into_iter().collect();
-    let mut class_weights = BTreeMap::new();
-    classes.sort();
-    classes.dedup();
-    for value in classes.clone() {
+    let classes: HashSet<_> = HashSet::from_iter(pred);
+    let mut class_weights = HashMap::new();
+    for value in &classes {
         class_weights.insert(
             value,
-            actual.iter().filter(|a| *a == value).count() as f32 / actual.len() as f32,
+            actual.iter().filter(|a| *a == *value).count() as f32 / actual.len() as f32,
         );
     }
-    return classes
+    classes
         .iter()
-        .map(|c| class_precision(pred, actual, *c) * class_weights.get(c).unwrap())
-        .sum();
+        .map(|c| class_precision(pred, actual, &c) * class_weights[c])
+        .sum()
 }
 
 fn macro_precision<T>(pred: &[T], actual: &[T]) -> f32
 where
     T: Eq,
-    T: Ord,
+    T: Hash,
 {
     assert_eq!(pred.len(), actual.len());
-    let mut classes: Vec<&T> = pred.into_iter().collect();
-    let mut class_weights = BTreeMap::new();
-    classes.sort();
-    classes.dedup();
+    let classes: HashSet<_> = HashSet::from_iter(pred);
+    let mut class_weights = HashMap::new();
     for value in classes.clone() {
         class_weights.insert(value, 1.0 / actual.len() as f32);
     }
-    return classes
+    classes
         .iter()
-        .map(|c| class_precision(pred, actual, *c) / classes.len() as f32)
-        .sum();
+        .map(|c| class_precision(pred, actual, c) / classes.len() as f32)
+        .sum()
 }
 
 /// The precision of a dataset
@@ -126,13 +127,13 @@ where
 pub fn precision<T>(pred: &[T], actual: &[T], average: Option<String>) -> f32
 where
     T: Eq,
-    T: Ord,
+    T: Hash,
 {
     match average {
         None => macro_precision(pred, actual),
         Some(string) => match string.as_ref() {
-            "macro" => return macro_precision(pred, actual),
-            "weighted" => return weighted_precision(pred, actual),
+            "macro" => macro_precision(pred, actual),
+            "weighted" => weighted_precision(pred, actual),
             _ => panic!("invalid averaging type"),
         },
     }
@@ -159,38 +160,34 @@ where
 fn weighted_recall<T>(pred: &[T], actual: &[T]) -> f32
 where
     T: Eq,
-    T: Ord,
+    T: Hash,
 {
     assert_eq!(pred.len(), actual.len());
-    let mut classes: Vec<&T> = pred.into_iter().collect();
-    let mut class_weights = BTreeMap::new();
-    classes.sort();
-    classes.dedup();
-    for value in classes.clone() {
+    let classes: HashSet<_> = HashSet::from_iter(pred);
+    let mut class_weights = HashMap::new();
+    for value in &classes {
         class_weights.insert(
             value,
-            actual.iter().filter(|a| **a == *value).count() as f32 / actual.len() as f32,
+            actual.iter().filter(|a| **a == **value).count() as f32 / actual.len() as f32,
         );
     }
-    return classes
+    classes
         .iter()
-        .map(|c| class_recall(pred, actual, *c) * class_weights.get(*c).unwrap())
-        .sum();
+        .map(|c| class_recall(pred, actual, &c) * class_weights[c])
+        .sum()
 }
 
 fn macro_recall<T>(pred: &[T], actual: &[T]) -> f32
 where
     T: Eq,
-    T: Ord,
+    T: Hash,
 {
     assert_eq!(pred.len(), actual.len());
-    let mut classes: Vec<&T> = pred.into_iter().collect();
-    classes.sort();
-    classes.dedup();
-    return classes
+    let classes: HashSet<_> = HashSet::from_iter(pred);
+    classes
         .iter()
         .map(|c| class_recall(pred, actual, *c) / classes.len() as f32)
-        .sum();
+        .sum()
 }
 
 /// The recall of a dataset
@@ -209,13 +206,13 @@ where
 pub fn recall<T>(pred: &[T], actual: &[T], average: Option<String>) -> f32
 where
     T: Eq,
-    T: Ord,
+    T: Hash,
 {
     match average {
         None => macro_recall(pred, actual),
         Some(string) => match string.as_ref() {
-            "macro" => return macro_recall(pred, actual),
-            "weighted" => return weighted_recall(pred, actual),
+            "macro" => macro_recall(pred, actual),
+            "weighted" => weighted_recall(pred, actual),
             _ => panic!("invalid averaging type"),
         },
     }
@@ -224,18 +221,17 @@ where
 fn macro_f1<T>(pred: &[T], actual: &[T]) -> f32
 where
     T: Eq,
-    T: Ord,
+    T: Hash,
 {
     let recall = macro_recall(pred, actual);
     let precision = macro_precision(pred, actual);
     2.0 * (recall * precision) / (recall + precision)
 }
 
-#[cfg(not(any(feature = "use_ndarray")))]
 fn weighted_f1<T>(pred: &[T], actual: &[T]) -> f32
 where
     T: Eq,
-    T: Ord,
+    T: Hash,
 {
     let recall = weighted_recall(pred, actual);
     let precision = weighted_precision(pred, actual);
@@ -259,13 +255,13 @@ where
 pub fn f1_score<T>(pred: &[T], actual: &[T], average: Option<String>) -> f32
 where
     T: Eq,
-    T: Ord,
+    T: Hash,
 {
     match average {
         None => macro_f1(pred, actual),
         Some(string) => match string.as_ref() {
-            "macro" => return macro_f1(pred, actual),
-            "weighted" => return weighted_f1(pred, actual),
+            "macro" => macro_f1(pred, actual),
+            "weighted" => weighted_f1(pred, actual),
             _ => panic!("invalid averaging type"),
         },
     }
@@ -288,13 +284,13 @@ pub fn hamming_loss<T>(pred: &[T], actual: &[T]) -> f32
 where
     T: Eq,
 {
-    return 1.0 - categorical_accuracy(pred, actual);
+    1.0 - categorical_accuracy(pred, actual)
 }
 
 fn macro_fbeta_score<T>(pred: &[T], actual: &[T], beta: f32) -> f32
 where
     T: Eq,
-    T: Ord,
+    T: Hash,
 {
     let precision = macro_precision(pred, actual);
     let recall = macro_recall(pred, actual);
@@ -306,7 +302,7 @@ where
 fn weighted_fbeta_score<T>(pred: &[T], actual: &[T], beta: f32) -> f32
 where
     T: Eq,
-    T: Ord,
+    T: Hash,
 {
     let precision = weighted_precision(pred, actual);
     let recall = weighted_recall(pred, actual);
@@ -332,13 +328,13 @@ where
 pub fn fbeta_score<T>(pred: &[T], actual: &[T], beta: f32, average: Option<String>) -> f32
 where
     T: Eq,
-    T: Ord,
+    T: Hash,
 {
     match average {
         None => macro_fbeta_score(pred, actual, beta),
         Some(string) => match string.as_ref() {
-            "macro" => return macro_fbeta_score(pred, actual, beta),
-            "weighted" => return weighted_fbeta_score(pred, actual, beta),
+            "macro" => macro_fbeta_score(pred, actual, beta),
+            "weighted" => weighted_fbeta_score(pred, actual, beta),
             _ => panic!("invalid averaging type"),
         },
     }
@@ -361,7 +357,7 @@ pub fn jaccard_similiarity_score<T>(pred: &[T], actual: &[T]) -> f32
 where
     T: Eq,
 {
-    return categorical_accuracy(pred, actual);
+    categorical_accuracy(pred, actual)
 }
 
 #[cfg(test)]
@@ -369,26 +365,26 @@ mod tests {
     use super::*;
     #[test]
     fn test_gini() {
-        let vec: Vec<usize> = vec![0, 0, 0, 1];
+        let vec: Vec<_> = vec![0, 0, 0, 1];
         assert_eq!(0.375, gini(&vec));
-        let v2: Vec<usize> = vec![0, 0];
+        let v2: Vec<_> = vec![0, 0];
         assert_eq!(0.0, gini(&v2));
-        let mut v3: Vec<usize> = vec![0];
+        let mut v3: Vec<_> = vec![0];
         v3.pop();
         assert_eq!(1.0, gini(&v3));
     }
 
     #[test]
     fn test_categorical_accuracy() {
-        let pred: Vec<u16> = vec![0, 1, 0, 1, 0, 1];
-        let real: Vec<u16> = vec![0, 0, 0, 0, 1, 0];
+        let pred: Vec<_> = vec![0, 1, 0, 1, 0, 1];
+        let real: Vec<_> = vec![0, 0, 0, 0, 1, 0];
         assert_eq!(0.33333334, categorical_accuracy(&pred, &real));
     }
 
     #[test]
     fn test_class_precision() {
         let actual = vec![0_u16, 1, 2, 0, 1, 2];
-        let pred: Vec<u16> = vec![0, 2, 1, 0, 0, 1];
+        let pred: Vec<_> = vec![0, 2, 1, 0, 0, 1];
         assert_eq!(0.6666667, class_precision(&pred, &actual, &0));
     }
 
@@ -428,7 +424,6 @@ mod tests {
     }
 
     #[test]
-    #[cfg(not(any(feature = "use_ndarray")))]
     fn test_f1_score() {
         let actual = vec![0_u8, 1, 2, 0, 1, 2];
         let pred = vec![0_u8, 2, 1, 0, 0, 1];
