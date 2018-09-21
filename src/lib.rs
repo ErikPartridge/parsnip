@@ -117,7 +117,7 @@ where
 /// Supports macro and weighted averages
 /// ```
 /// # extern crate parsnip;
-/// #[macro_use] extern crate approx;
+/// #[macro_use] extern crate approx; // for approximate equality check
 /// use parsnip::precision;
 ///
 /// let actual = vec![0, 1, 2, 0, 1, 2];
@@ -198,7 +198,7 @@ where
 /// Supports macro and weighted averages
 /// ```
 /// # extern crate parsnip;
-/// #[macro_use] extern crate approx;
+/// #[macro_use] extern crate approx; // for approximate equality check
 /// use parsnip::recall;
 ///
 /// let actual = vec![0, 1, 2, 0, 1, 2];
@@ -248,7 +248,7 @@ where
 /// Supports macro and weighted averages
 /// ```
 /// # extern crate parsnip;
-/// #[macro_use] extern crate approx;
+/// #[macro_use] extern crate approx; // for approximate equality check
 /// use parsnip::f1_score;
 ///
 /// let actual = vec![0, 1, 2, 0, 1, 2];
@@ -323,7 +323,7 @@ where
 /// Supports macro and weighted averages
 /// ```
 /// # extern crate parsnip;
-/// #[macro_use] extern crate approx;
+/// #[macro_use] extern crate approx; // for approximate equality check
 /// use parsnip::fbeta_score;
 ///
 /// let actual = vec![0, 1, 2, 0, 1, 2];
