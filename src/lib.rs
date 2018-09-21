@@ -61,15 +61,15 @@ where
 /// Returns a float where 1.0 is a perfectly accurate dataset
 /// ```
 /// use parsnip::categorical_accuracy;
-/// # use std::error::Error;
-/// # fn main() -> Result<(), Box<Error>> {
+/// # use parsnip::LengthError;
+/// # fn main() -> Result<(), LengthError> {
 /// let pred = vec![0, 0, 0 , 1, 2];
 /// let actual = vec![1, 1, 1, 1, 2];
 /// assert_eq!(categorical_accuracy(&pred, &actual)?, 0.4);
 /// # Ok(())
 /// # }
 /// ```
-pub fn categorical_accuracy<T>(pred: &[T], actual: &[T]) -> Result<f32, Box<Error>>
+pub fn categorical_accuracy<T>(pred: &[T], actual: &[T]) -> Result<f32, LengthError>
 where
     T: Eq,
 {
@@ -160,8 +160,8 @@ impl Default for Average {
 /// # extern crate parsnip;
 /// #[macro_use] extern crate approx; // for approximate equality check
 /// use parsnip::{Average, precision};
-/// # use std::error::Error;
-/// # fn main() -> Result<(), Box<Error>> {
+/// # use parsnip::LengthError;
+/// # fn main() -> Result<(), LengthError> {
 /// let actual = vec![0, 1, 2, 0, 1, 2];
 /// let pred = vec![0, 2, 1, 0, 0, 1];
 /// 
@@ -169,7 +169,7 @@ impl Default for Average {
 /// # Ok(())
 /// # }
 /// ```
-pub fn precision<T>(pred: &[T], actual: &[T], average: Average) -> Result<f32, Box<Error>>
+pub fn precision<T>(pred: &[T], actual: &[T], average: Average) -> Result<f32, LengthError>
 where
     T: Eq,
     T: Hash,
@@ -240,8 +240,8 @@ where
 /// # extern crate parsnip;
 /// #[macro_use] extern crate approx; // for approximate equality check
 /// use parsnip::{Average, recall};
-/// # use std::error::Error;
-/// # fn main() -> Result<(), Box<Error>> {
+/// # use parsnip::LengthError;
+/// # fn main() -> Result<(), LengthError> {
 /// let actual = vec![0, 1, 2, 0, 1, 2];
 /// let pred = vec![0, 2, 1, 0, 0, 1];
 /// 
@@ -249,7 +249,7 @@ where
 /// # Ok(())
 /// # }
 /// ```
-pub fn recall<T>(pred: &[T], actual: &[T], average: Average) -> Result<f32, Box<Error>>
+pub fn recall<T>(pred: &[T], actual: &[T], average: Average) -> Result<f32, LengthError>
 where
     T: Eq,
     T: Hash,
@@ -293,8 +293,8 @@ where
 /// # extern crate parsnip;
 /// #[macro_use] extern crate approx; // for approximate equality check
 /// use parsnip::{Average, f1_score};
-/// # use std::error::Error;
-/// # fn main() -> Result<(), Box<Error>> {
+/// # use parsnip::LengthError;
+/// # fn main() -> Result<(), LengthError> {
 /// let actual = vec![0, 1, 2, 0, 1, 2];
 /// let pred = vec![0, 2, 1, 0, 0, 1];
 /// 
@@ -303,7 +303,7 @@ where
 /// # Ok(())
 /// # }
 /// ```
-pub fn f1_score<T>(pred: &[T], actual: &[T], average: Average) -> Result<f32, Box<Error>>
+pub fn f1_score<T>(pred: &[T], actual: &[T], average: Average) -> Result<f32, LengthError>
 where
     T: Eq,
     T: Hash,
@@ -325,8 +325,8 @@ where
 /// ```
 /// use parsnip::hamming_loss;
 ///
-/// # use std::error::Error;
-/// # fn main() -> Result<(), Box<Error>> {
+/// # use parsnip::LengthError;
+/// # fn main() -> Result<(), LengthError> {
 /// let actual = vec![0, 1, 2, 0, 0];
 /// let pred = vec![0, 2, 1, 0, 1];
 ///
@@ -334,7 +334,7 @@ where
 /// # Ok(())
 /// # }
 /// ```
-pub fn hamming_loss<T>(pred: &[T], actual: &[T]) -> Result<f32, Box<Error>>
+pub fn hamming_loss<T>(pred: &[T], actual: &[T]) -> Result<f32, LengthError>
 where
     T: Eq,
 {
@@ -377,9 +377,8 @@ where
 /// ```
 /// # extern crate parsnip;
 /// #[macro_use] extern crate approx; // for approximate equality check
-/// use parsnip::{Average, fbeta_score};
-/// # use std::error::Error;
-/// # fn main() -> Result<(), Box<Error>> {
+/// use parsnip::{Average, fbeta_score, LengthError};
+/// # fn main() -> Result<(), LengthError> {
 /// let actual = vec![0, 1, 2, 0, 1, 2];
 /// let pred = vec![0, 2, 1, 0, 0, 1];
 /// 
@@ -388,7 +387,7 @@ where
 /// # Ok(())
 /// # }
 /// ```
-pub fn fbeta_score<T>(pred: &[T], actual: &[T], beta: f32, average: Average) -> Result<f32, Box<Error>>
+pub fn fbeta_score<T>(pred: &[T], actual: &[T], beta: f32, average: Average) -> Result<f32, LengthError>
 where
     T: Eq,
     T: Hash,
@@ -410,8 +409,8 @@ where
 /// Supports macro and weighted averages
 /// ```
 /// use parsnip::jaccard_similiarity_score;
-/// # use std::error::Error;
-/// # fn main() -> Result<(), Box<Error>> {
+/// # use parsnip::LengthError;
+/// # fn main() -> Result<(), LengthError> {
 /// let actual = vec![0, 2, 1, 3];
 /// let pred = vec![0, 1, 2, 3];
 ///
@@ -419,7 +418,7 @@ where
 /// # Ok(())
 /// # }
 /// ```
-pub fn jaccard_similiarity_score<T>(pred: &[T], actual: &[T]) -> Result<f32, Box<Error>>
+pub fn jaccard_similiarity_score<T>(pred: &[T], actual: &[T]) -> Result<f32, LengthError>
 where
     T: Eq,
 {
