@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::hash::Hash;
+use std::error::Error;  
 use std::fmt;
 
 /// The error returned when the length of the predicted and the ground truth do not match
