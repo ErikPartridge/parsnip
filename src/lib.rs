@@ -4,13 +4,14 @@ use std::hash::Hash;
 use std::error::Error;
 use std::fmt;
 
+/// The error returned when the length of the predicted and the ground truth do not match
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
-pub struct LengthError;
+pub struct LengthError(usize, usize);
 
 
 impl fmt::Display for LengthError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "The lengths of the predicted and actual datasets must be equal.")
+        write!(f, "The lengths of the predicted and actual datasets must be equal.\nInstead, the predicted length was found to be {} while the ground truth was found to be {}", self.0, self.1)
     }
 }
 
@@ -18,10 +19,6 @@ impl Error for LengthError {
     fn description(&self) -> &str {
         "The lengths of the predicted and actual datasets must be equal."
     } 
-
-    fn cause(&self) -> Option<&Error> {
-        None
-    }
 }
 
 
@@ -64,16 +61,20 @@ where
 /// Returns a float where 1.0 is a perfectly accurate dataset
 /// ```
 /// use parsnip::categorical_accuracy;
+/// # use std::error::Error;
+/// # fn main() -> Result<(), Box<Error>> {
 /// let pred = vec![0, 0, 0 , 1, 2];
 /// let actual = vec![1, 1, 1, 1, 2];
-/// assert_eq!(categorical_accuracy(&pred, &actual).unwrap(), 0.4);
+/// assert_eq!(categorical_accuracy(&pred, &actual)?, 0.4);
+/// # Ok(())
+/// # }
 /// ```
-pub fn categorical_accuracy<T>(pred: &[T], actual: &[T]) -> Result<f32, LengthError>
+pub fn categorical_accuracy<T>(pred: &[T], actual: &[T]) -> Result<f32, Box<Error>>
 where
     T: Eq,
 {
     if pred.len() != actual.len(){
-        return Err(LengthError);
+        return Err(Box::new(LengthError(pred.len(), actual.len())));
     }
     let truthy = pred.iter().zip(actual).filter(|(x, y)| x == y).count();
     Ok(truthy as f32 / pred.len() as f32)
@@ -159,19 +160,22 @@ impl Default for Average {
 /// # extern crate parsnip;
 /// #[macro_use] extern crate approx; // for approximate equality check
 /// use parsnip::{Average, precision};
-///
+/// # use std::error::Error;
+/// # fn main() -> Result<(), Box<Error>> {
 /// let actual = vec![0, 1, 2, 0, 1, 2];
 /// let pred = vec![0, 2, 1, 0, 0, 1];
 /// 
-/// assert_ulps_eq!(precision(&pred, &actual, Average::Macro).unwrap(), 0.22222222);
+/// assert_ulps_eq!(precision(&pred, &actual, Average::Macro)?, 0.22222222);
+/// # Ok(())
+/// # }
 /// ```
-pub fn precision<T>(pred: &[T], actual: &[T], average: Average) -> Result<f32, LengthError>
+pub fn precision<T>(pred: &[T], actual: &[T], average: Average) -> Result<f32, Box<Error>>
 where
     T: Eq,
     T: Hash,
 {
     if pred.len() != actual.len(){
-        return Err(LengthError);
+        return Err(Box::new(LengthError(pred.len(), actual.len())));
     }
     match average {
         Average::Macro => Ok(macro_precision(pred, actual)),
@@ -201,7 +205,6 @@ where
     T: Eq,
     T: Hash,
 {
-    assert_eq!(pred.len(), actual.len());
     let classes: HashSet<_> = pred.into_iter().collect();
     let mut class_weights = HashMap::new();
     for value in &classes {
@@ -221,7 +224,6 @@ where
     T: Eq,
     T: Hash,
 {
-    assert_eq!(pred.len(), actual.len());
     let classes: HashSet<_> = pred.into_iter().collect();
     classes
         .iter()
@@ -238,19 +240,22 @@ where
 /// # extern crate parsnip;
 /// #[macro_use] extern crate approx; // for approximate equality check
 /// use parsnip::{Average, recall};
-///
+/// # use std::error::Error;
+/// # fn main() -> Result<(), Box<Error>> {
 /// let actual = vec![0, 1, 2, 0, 1, 2];
 /// let pred = vec![0, 2, 1, 0, 0, 1];
 /// 
-/// assert_ulps_eq!(recall(&pred, &actual, Average::Macro).unwrap(), 0.333333333);
+/// assert_ulps_eq!(recall(&pred, &actual, Average::Macro)?, 0.333333333);
+/// # Ok(())
+/// # }
 /// ```
-pub fn recall<T>(pred: &[T], actual: &[T], average: Average) -> Result<f32, LengthError>
+pub fn recall<T>(pred: &[T], actual: &[T], average: Average) -> Result<f32, Box<Error>>
 where
     T: Eq,
     T: Hash,
 {
     if pred.len() != actual.len(){
-        return Err(LengthError);
+        return Err(Box::new(LengthError(pred.len(), actual.len())));
     }
 
     match average {
@@ -288,20 +293,23 @@ where
 /// # extern crate parsnip;
 /// #[macro_use] extern crate approx; // for approximate equality check
 /// use parsnip::{Average, f1_score};
-///
+/// # use std::error::Error;
+/// # fn main() -> Result<(), Box<Error>> {
 /// let actual = vec![0, 1, 2, 0, 1, 2];
 /// let pred = vec![0, 2, 1, 0, 0, 1];
 /// 
-/// assert_ulps_eq!(f1_score(&pred, &actual, Average::Macro).unwrap(), 0.26666666);
-/// assert_ulps_eq!(f1_score(&pred, &actual, Average::Weighted).unwrap(), 0.26666666);
+/// assert_ulps_eq!(f1_score(&pred, &actual, Average::Macro)?, 0.26666666);
+/// assert_ulps_eq!(f1_score(&pred, &actual, Average::Weighted)?, 0.26666666);
+/// # Ok(())
+/// # }
 /// ```
-pub fn f1_score<T>(pred: &[T], actual: &[T], average: Average) -> Result<f32, LengthError>
+pub fn f1_score<T>(pred: &[T], actual: &[T], average: Average) -> Result<f32, Box<Error>>
 where
     T: Eq,
     T: Hash,
 {
-    if pred.len() != actual.len(){
-        return Err(LengthError);
+    if pred.len() != actual.len() {
+        return Err(Box::new(LengthError(pred.len(), actual.len())));
     }
     match average {
         Average::Macro => Ok(macro_f1(pred, actual)),
@@ -317,12 +325,16 @@ where
 /// ```
 /// use parsnip::hamming_loss;
 ///
+/// # use std::error::Error;
+/// # fn main() -> Result<(), Box<Error>> {
 /// let actual = vec![0, 1, 2, 0, 0];
 /// let pred = vec![0, 2, 1, 0, 1];
 ///
-/// assert_eq!(hamming_loss(&pred, &actual).unwrap(), 0.6);
+/// assert_eq!(hamming_loss(&pred, &actual)?, 0.6);
+/// # Ok(())
+/// # }
 /// ```
-pub fn hamming_loss<T>(pred: &[T], actual: &[T]) -> Result<f32, LengthError>
+pub fn hamming_loss<T>(pred: &[T], actual: &[T]) -> Result<f32, Box<Error>>
 where
     T: Eq,
 {
@@ -366,20 +378,23 @@ where
 /// # extern crate parsnip;
 /// #[macro_use] extern crate approx; // for approximate equality check
 /// use parsnip::{Average, fbeta_score};
-///
+/// # use std::error::Error;
+/// # fn main() -> Result<(), Box<Error>> {
 /// let actual = vec![0, 1, 2, 0, 1, 2];
 /// let pred = vec![0, 2, 1, 0, 0, 1];
 /// 
-/// assert_ulps_eq!(fbeta_score(&pred, &actual, 0.5, Average::Macro).unwrap(), 0.23809524);
-/// assert_ulps_eq!(fbeta_score(&pred, &actual, 0.5, Average::Weighted).unwrap(), 0.23809527);
+/// assert_ulps_eq!(fbeta_score(&pred, &actual, 0.5, Average::Macro)?, 0.23809524);
+/// assert_ulps_eq!(fbeta_score(&pred, &actual, 0.5, Average::Weighted)?, 0.23809527);
+/// # Ok(())
+/// # }
 /// ```
-pub fn fbeta_score<T>(pred: &[T], actual: &[T], beta: f32, average: Average) -> Result<f32, LengthError>
+pub fn fbeta_score<T>(pred: &[T], actual: &[T], beta: f32, average: Average) -> Result<f32, Box<Error>>
 where
     T: Eq,
     T: Hash,
 {
     if pred.len() != actual.len(){
-        return Err(LengthError);
+        return Err(Box::new(LengthError(pred.len(), actual.len())));
     }
 
     match average {
@@ -395,13 +410,16 @@ where
 /// Supports macro and weighted averages
 /// ```
 /// use parsnip::jaccard_similiarity_score;
-///
+/// # use std::error::Error;
+/// # fn main() -> Result<(), Box<Error>> {
 /// let actual = vec![0, 2, 1, 3];
 /// let pred = vec![0, 1, 2, 3];
 ///
-/// assert_eq!(jaccard_similiarity_score(&pred, &actual).unwrap(), 0.5);
+/// assert_eq!(jaccard_similiarity_score(&pred, &actual)?, 0.5);
+/// # Ok(())
+/// # }
 /// ```
-pub fn jaccard_similiarity_score<T>(pred: &[T], actual: &[T]) -> Result<f32, LengthError>
+pub fn jaccard_similiarity_score<T>(pred: &[T], actual: &[T]) -> Result<f32, Box<Error>>
 where
     T: Eq,
 {
