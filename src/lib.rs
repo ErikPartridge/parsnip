@@ -7,6 +7,7 @@ use std::fmt;
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct LengthError;
 
+
 impl fmt::Display for LengthError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "The lengths of the predicted and actual datasets must be equal.")
