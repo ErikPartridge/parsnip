@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::hash::Hash;
-use std::error::Error;
 use std::fmt;
 
 /// The error returned when the length of the predicted and the ground truth do not match
@@ -74,7 +73,7 @@ where
     T: Eq,
 {
     if pred.len() != actual.len(){
-        return Err(Box::new(LengthError(pred.len(), actual.len())));
+        return Err(LengthError(pred.len(), actual.len()));
     }
     let truthy = pred.iter().zip(actual).filter(|(x, y)| x == y).count();
     Ok(truthy as f32 / pred.len() as f32)
@@ -175,7 +174,7 @@ where
     T: Hash,
 {
     if pred.len() != actual.len(){
-        return Err(Box::new(LengthError(pred.len(), actual.len())));
+        return Err(LengthError(pred.len(), actual.len()));
     }
     match average {
         Average::Macro => Ok(macro_precision(pred, actual)),
@@ -255,7 +254,7 @@ where
     T: Hash,
 {
     if pred.len() != actual.len(){
-        return Err(Box::new(LengthError(pred.len(), actual.len())));
+        return Err(LengthError(pred.len(), actual.len()));
     }
 
     match average {
@@ -309,7 +308,7 @@ where
     T: Hash,
 {
     if pred.len() != actual.len() {
-        return Err(Box::new(LengthError(pred.len(), actual.len())));
+        return Err(LengthError(pred.len(), actual.len()));
     }
     match average {
         Average::Macro => Ok(macro_f1(pred, actual)),
@@ -393,7 +392,7 @@ where
     T: Hash,
 {
     if pred.len() != actual.len(){
-        return Err(Box::new(LengthError(pred.len(), actual.len())));
+        return Err(LengthError(pred.len(), actual.len()));
     }
 
     match average {
