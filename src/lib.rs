@@ -135,7 +135,7 @@ impl Default for Average {
 /// ```
 /// # extern crate parsnip;
 /// #[macro_use] extern crate approx; // for approximate equality check
-/// use parsnip::precision;
+/// use parsnip::{Average, precision};
 ///
 /// let actual = vec![0, 1, 2, 0, 1, 2];
 /// let pred = vec![0, 2, 1, 0, 0, 1];
@@ -212,7 +212,7 @@ where
 /// ```
 /// # extern crate parsnip;
 /// #[macro_use] extern crate approx; // for approximate equality check
-/// use parsnip::recall;
+/// use parsnip::{Average, recall};
 ///
 /// let actual = vec![0, 1, 2, 0, 1, 2];
 /// let pred = vec![0, 2, 1, 0, 0, 1];
@@ -258,7 +258,7 @@ where
 /// ```
 /// # extern crate parsnip;
 /// #[macro_use] extern crate approx; // for approximate equality check
-/// use parsnip::f1_score;
+/// use parsnip::{Average, f1_score};
 ///
 /// let actual = vec![0, 1, 2, 0, 1, 2];
 /// let pred = vec![0, 2, 1, 0, 0, 1];
@@ -329,7 +329,7 @@ where
 /// ```
 /// # extern crate parsnip;
 /// #[macro_use] extern crate approx; // for approximate equality check
-/// use parsnip::fbeta_score;
+/// use parsnip::{Average, fbeta_score};
 ///
 /// let actual = vec![0, 1, 2, 0, 1, 2];
 /// let pred = vec![0, 2, 1, 0, 0, 1];
