@@ -1,11 +1,14 @@
 # parsnip
 
-[![Coverage Status](https://coveralls.io/repos/github/ErikPartridge/parsnip/badge.svg?branch=master)](https://coveralls.io/github/ErikPartridge/parsnip?branch=master)
-High performance data science metrics implemented in Rust.
+[![Coverage Status](https://coveralls.io/repos/github/ErikPartridge/parsnip/badge.svg?branch=master)](https://coveralls.io/github/ErikPartridge/parsnip?branch=master) [![Docs](https://docs.rs/parsnip/badge.svg)](https://docs.rs/parsnips)
+
+Data science metrics for Rust (categorical at the moment, but under active development).
 
 ### Goals
 
-Parsnip aims to supply a wide variety of useful metrics for data science. It presently has, and should always have zero dependencies, aims to not unneccessarily slow things down, and should guarantee accuracy. Parsnip should scale well to handle anything from 1 to 10M data points, and hopefully be thread safe. There should be no unsafe code in Parsnip.
+Parsnip aims to supply a wide variety of useful metrics for data science. Generally, I draw inspiration from [SciKit Learn's metrics](http://scikit-learn.org/stable/modules/classes.html) in terms of what to include. However, I'll add other features as contributors suggest or as I come across them (for example, Gini Impurity).
+
+Ultimately, Parsnip should support a wide variety of linear algebra packages, including some with GPU support. Wherever possible, I will also endeavour to make Parsnip as performant as possible to avoid slowing down training.
 
 
 ### Contributing
@@ -18,10 +21,15 @@ I'm not sure. I wanted something natural, and it felt right. Plus, it's relative
 
 ### Roadmap
 
-I'm first aiming to finish broad support for categorical data—I want it to cover most, if not all of the SciKit Learn algorithms—at a minimum the non-highly complex ones (AUC might be a bit later). Plus, I'll add in some other useful once such as gini impurity.
-
+I'm first aiming to finish broad support for categorical data. Code quality improvements, and greater unit test coverage would also be preferred. Before getting to 1.0, support for types other than slices is desirable.
 
 ### Change log
+
+#### 0.3.0
+Support for generic types, better error handling and documentation. Substantial breaking changes in this version.
+
+#### 0.2.2
+Mostly bug fixes, a few additions
 
 #### 0.2.0
 Added numerous different functions for categorical accuracy, bumping to 0.2.0 as a result. I consider most of these now stable.
