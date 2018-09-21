@@ -4,8 +4,8 @@ use std::hash::Hash;
 use std::error::Error;
 use std::fmt;
 
-#[derive(Debug)]
-struct LengthError;
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
+pub struct LengthError;
 
 impl fmt::Display for LengthError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -65,22 +65,23 @@ where
 /// use parsnip::categorical_accuracy;
 /// let pred = vec![0, 0, 0 , 1, 2];
 /// let actual = vec![1, 1, 1, 1, 2];
-/// assert_eq!(categorical_accuracy(&pred, &actual), 0.4);
+/// assert_eq!(categorical_accuracy(&pred, &actual).unwrap(), 0.4);
 /// ```
-pub fn categorical_accuracy<T>(pred: &[T], actual: &[T]) -> f32
+pub fn categorical_accuracy<T>(pred: &[T], actual: &[T]) -> Result<f32, LengthError>
 where
     T: Eq,
 {
-    assert_eq!(pred.len(), actual.len());
+    if pred.len() != actual.len(){
+        return Err(LengthError);
+    }
     let truthy = pred.iter().zip(actual).filter(|(x, y)| x == y).count();
-    truthy as f32 / pred.len() as f32
+    Ok(truthy as f32 / pred.len() as f32)
 }
 
 fn class_precision<T>(pred: &[T], actual: &[T], class: &T) -> f32
 where
     T: Eq,
 {
-    assert_eq!(pred.len(), actual.len());
     //First, get the map of all true positives
     let true_positives = pred
         .iter()
@@ -95,14 +96,11 @@ where
     }
 }
 
-fn weighted_precision<T>(pred: &[T], actual: &[T]) -> Result<f32, LengthError>
+fn weighted_precision<T>(pred: &[T], actual: &[T]) -> f32
 where
     T: Eq,
     T: Hash,
 {
-    if pred.len() != actual.len() {
-        return Err(LengthError);
-    }
     let classes: HashSet<_> = pred.into_iter().collect();
     let mut class_weights = HashMap::new();
     for value in &classes {
@@ -111,29 +109,27 @@ where
             actual.iter().filter(|a| *a == *value).count() as f32 / actual.len() as f32,
         );
     }
-    Ok(classes
+
+    classes
         .iter()
         .map(|c| class_precision(pred, actual, &c) * class_weights[c])
-        .sum())
+        .sum()
 }
 
-fn macro_precision<T>(pred: &[T], actual: &[T]) -> Result<f32, LengthError>
+fn macro_precision<T>(pred: &[T], actual: &[T]) -> f32
 where
     T: Eq,
     T: Hash,
 {
-    if pred.len() != actual.len() {
-        return Err(LengthError);
-    }
     let classes: HashSet<_> = pred.into_iter().collect();
     let mut class_weights = HashMap::new();
     for value in classes.clone() {
         class_weights.insert(value, 1.0 / actual.len() as f32);
     }
-    Ok(classes
+    classes
         .iter()
         .map(|c| class_precision(pred, actual, c) / classes.len() as f32)
-        .sum())
+        .sum()
 }
 
 /// The type of score averaging strategy employed in the calculation of
@@ -166,16 +162,19 @@ impl Default for Average {
 /// let actual = vec![0, 1, 2, 0, 1, 2];
 /// let pred = vec![0, 2, 1, 0, 0, 1];
 /// 
-/// assert_ulps_eq!(precision(&pred, &actual, Average::Macro), 0.22222222);
+/// assert_ulps_eq!(precision(&pred, &actual, Average::Macro).unwrap(), 0.22222222);
 /// ```
 pub fn precision<T>(pred: &[T], actual: &[T], average: Average) -> Result<f32, LengthError>
 where
     T: Eq,
     T: Hash,
 {
+    if pred.len() != actual.len(){
+        return Err(LengthError);
+    }
     match average {
-        Average::Macro => macro_precision(pred, actual),
-        Average::Weighted => weighted_precision(pred, actual),
+        Average::Macro => Ok(macro_precision(pred, actual)),
+        Average::Weighted => Ok(weighted_precision(pred, actual)),
     }
 }
 
@@ -183,7 +182,6 @@ fn class_recall<T>(pred: &[T], actual: &[T], class: &T) -> f32
 where
     T: Eq,
 {
-    assert_eq!(pred.len(), actual.len());
     let true_positives = pred
         .iter()
         .zip(actual)
@@ -243,16 +241,20 @@ where
 /// let actual = vec![0, 1, 2, 0, 1, 2];
 /// let pred = vec![0, 2, 1, 0, 0, 1];
 /// 
-/// assert_ulps_eq!(recall(&pred, &actual, Average::Macro), 0.333333333);
+/// assert_ulps_eq!(recall(&pred, &actual, Average::Macro).unwrap(), 0.333333333);
 /// ```
-pub fn recall<T>(pred: &[T], actual: &[T], average: Average) -> f32
+pub fn recall<T>(pred: &[T], actual: &[T], average: Average) -> Result<f32, LengthError>
 where
     T: Eq,
     T: Hash,
 {
+    if pred.len() != actual.len(){
+        return Err(LengthError);
+    }
+
     match average {
-        Average::Macro => macro_recall(pred, actual),
-        Average::Weighted => weighted_recall(pred, actual),
+        Average::Macro => Ok(macro_recall(pred, actual)),
+        Average::Weighted => Ok(weighted_recall(pred, actual)),
     }
 }
 
@@ -289,17 +291,20 @@ where
 /// let actual = vec![0, 1, 2, 0, 1, 2];
 /// let pred = vec![0, 2, 1, 0, 0, 1];
 /// 
-/// assert_ulps_eq!(f1_score(&pred, &actual, Average::Macro), 0.26666666);
-/// assert_ulps_eq!(f1_score(&pred, &actual, Average::Weighted), 0.26666666);
+/// assert_ulps_eq!(f1_score(&pred, &actual, Average::Macro).unwrap(), 0.26666666);
+/// assert_ulps_eq!(f1_score(&pred, &actual, Average::Weighted).unwrap(), 0.26666666);
 /// ```
-pub fn f1_score<T>(pred: &[T], actual: &[T], average: Average) -> f32
+pub fn f1_score<T>(pred: &[T], actual: &[T], average: Average) -> Result<f32, LengthError>
 where
     T: Eq,
     T: Hash,
 {
+    if pred.len() != actual.len(){
+        return Err(LengthError);
+    }
     match average {
-        Average::Macro => macro_f1(pred, actual),
-        Average::Weighted => weighted_f1(pred, actual),
+        Average::Macro => Ok(macro_f1(pred, actual)),
+        Average::Weighted => Ok(weighted_f1(pred, actual)),
     }
 }
 
@@ -314,13 +319,17 @@ where
 /// let actual = vec![0, 1, 2, 0, 0];
 /// let pred = vec![0, 2, 1, 0, 1];
 ///
-/// assert_eq!(hamming_loss(&pred, &actual), 0.6);
+/// assert_eq!(hamming_loss(&pred, &actual).unwrap(), 0.6);
 /// ```
-pub fn hamming_loss<T>(pred: &[T], actual: &[T]) -> f32
+pub fn hamming_loss<T>(pred: &[T], actual: &[T]) -> Result<f32, LengthError>
 where
     T: Eq,
 {
-    1.0 - categorical_accuracy(pred, actual)
+    let cat_acc = categorical_accuracy(pred, actual);
+    match cat_acc {
+        Ok(x) => Ok(1.0 - x),
+        err => err
+    }
 }
 
 fn macro_fbeta_score<T>(pred: &[T], actual: &[T], beta: f32) -> f32
@@ -360,17 +369,21 @@ where
 /// let actual = vec![0, 1, 2, 0, 1, 2];
 /// let pred = vec![0, 2, 1, 0, 0, 1];
 /// 
-/// assert_ulps_eq!(fbeta_score(&pred, &actual, 0.5, Average::Macro), 0.23809524);
-/// assert_ulps_eq!(fbeta_score(&pred, &actual, 0.5, Average::Weighted), 0.23809527);
+/// assert_ulps_eq!(fbeta_score(&pred, &actual, 0.5, Average::Macro).unwrap(), 0.23809524);
+/// assert_ulps_eq!(fbeta_score(&pred, &actual, 0.5, Average::Weighted).unwrap(), 0.23809527);
 /// ```
-pub fn fbeta_score<T>(pred: &[T], actual: &[T], beta: f32, average: Average) -> f32
+pub fn fbeta_score<T>(pred: &[T], actual: &[T], beta: f32, average: Average) -> Result<f32, LengthError>
 where
     T: Eq,
     T: Hash,
 {
+    if pred.len() != actual.len(){
+        return Err(LengthError);
+    }
+
     match average {
-        Average::Macro => macro_fbeta_score(pred, actual, beta),
-        Average::Weighted => weighted_fbeta_score(pred, actual, beta),
+        Average::Macro => Ok(macro_fbeta_score(pred, actual, beta)),
+        Average::Weighted => Ok(weighted_fbeta_score(pred, actual, beta)),
     }
 }
 
@@ -385,9 +398,9 @@ where
 /// let actual = vec![0, 2, 1, 3];
 /// let pred = vec![0, 1, 2, 3];
 ///
-/// assert_eq!(jaccard_similiarity_score(&pred, &actual), 0.5);
+/// assert_eq!(jaccard_similiarity_score(&pred, &actual).unwrap(), 0.5);
 /// ```
-pub fn jaccard_similiarity_score<T>(pred: &[T], actual: &[T]) -> f32
+pub fn jaccard_similiarity_score<T>(pred: &[T], actual: &[T]) -> Result<f32, LengthError>
 where
     T: Eq,
 {
@@ -415,7 +428,9 @@ mod tests {
     fn test_categorical_accuracy() {
         let pred = vec![0, 1, 0, 1, 0, 1];
         let real = vec![0, 0, 0, 0, 1, 0];
-        assert_ulps_eq!(0.33333333, categorical_accuracy(&pred, &real));
+        assert_ulps_eq!(0.33333333, categorical_accuracy(&pred, &real).unwrap());
+        let pred_short = vec![0];
+        assert!(categorical_accuracy(&pred_short, &real).is_err());
     }
 
     #[test]
@@ -464,6 +479,8 @@ mod tests {
     fn test_f1_score() {
         let actual = vec![0, 1, 2, 0, 1, 2];
         let pred = vec![0, 2, 1, 0, 0, 1];
-        assert_ulps_eq!(f1_score(&pred, &actual, Average::Macro), 0.26666665);
+        assert_ulps_eq!(f1_score(&pred, &actual, Average::Macro).unwrap(), 0.26666665);
+        let pred_short = vec![0];
+        assert!(f1_score(&pred_short, &actual, Average::Weighted).is_err());
     }
 }
