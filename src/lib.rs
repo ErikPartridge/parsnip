@@ -338,11 +338,8 @@ pub fn hamming_loss<T>(pred: &[T], actual: &[T]) -> Result<f32, LengthError>
 where
     T: Eq,
 {
-    let cat_acc = categorical_accuracy(pred, actual);
-    match cat_acc {
-        Ok(x) => Ok(1.0 - x),
-        err => err
-    }
+    let cat_acc = categorical_accuracy(pred, actual)?;
+    Ok(1. - cat_acc)
 }
 
 fn macro_fbeta_score<T>(pred: &[T], actual: &[T], beta: f32) -> f32
