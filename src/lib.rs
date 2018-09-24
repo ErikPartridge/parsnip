@@ -11,13 +11,13 @@ pub struct LengthError(usize, usize);
 
 impl fmt::Display for LengthError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "The lengths of the predicted and actual datasets must be equal.\nInstead, the predicted length was found to be {} while the ground truth was found to be {}", self.0, self.1)
+        write!(f, "Dataset lengths must be equal, found {} and {}", self.0, self.1)
     }
 }
 
 impl Error for LengthError {
     fn description(&self) -> &str {
-        "The lengths of the predicted and actual datasets must be equal."
+        "Dataset lengths are do not match"
     } 
 }
 
