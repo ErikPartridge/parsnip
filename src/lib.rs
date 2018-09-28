@@ -17,7 +17,7 @@ impl fmt::Display for LengthError {
 
 impl Error for LengthError {
     fn description(&self) -> &str {
-        "Dataset lengths are do not match"
+        "Dataset lengths do not match"
     } 
 }
 
