@@ -1,6 +1,6 @@
 [package]
 name = "parsnip"
-version = "0.2.2"
+version = "0.3.0"
 authors = ["Erik A. Partridge <erik.partridge@mail.mcgill.ca>"]
 license = "MIT"
 repository = "https://github.com/ErikPartridge/parsnip"
